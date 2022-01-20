@@ -1,0 +1,150 @@
+name: nginx-service-mesh
+version: 0.0.1
+description: "An NGINX Service Mesh Porter Bundle"
+registry: ghcr.io/clhain
+dockerfile: Dockerfile.tmpl
+
+mixins:
+  - exec
+  - helm3:
+      clientVersion: v3.7.2
+      repositories:
+        nginx-stable:
+          url: "https://helm.nginx.com/stable"
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+
+customActions:
+  status:
+    description: "Get the status of a helm3 release"
+    modifies: false
+    stateless: true
+
+parameters:
+  - name: registry
+    type: string
+    default: docker-registry.nginx.com/nsm
+  - name: chart-version
+    type: string
+    default: "0.3.1"
+  - name: app-version
+    type: string
+    default: "1.3.1"
+  - name: tracing-backend
+    type: string
+    default: jaeger
+  - name: tracing-address
+    type: string
+    default: "otel-agent.observe.svc.cluster.local:4317"
+  - name: enabled-namespaces
+    type: string
+    default: "default"
+  - name: deploy-grafana
+    type: string
+    default: "false"
+  - name: mesh-namespace
+    type: string
+    default: "nginx-mesh"
+  - name: chart-values
+    type: string
+    path: /cnab/app/chart-values.yaml
+    default: ''
+
+install:
+  - helm3:
+      description: "Install NGINX Service Mesh to the cluster"
+      name: nginx-service-mesh
+      namespace: "{{ bundle.parameters.mesh-namespace }}"
+      chart: nginx-stable/nginx-service-mesh
+      upsert: true
+      version: "{{ bundle.parameters.chart-version }}"
+      wait: true
+      values:
+        - /cnab/app/chart-values.yaml
+      set:
+        deployGrafana: "{{ bundle.parameters.deploy-grafana }}"
+        autoInjection.disable: true
+        autoInjection.enabledNamespaces: "{default}"
+        registry.server: "{{ bundle.parameters.registry }}"
+        registry.imageTag: "{{ bundle.parameters.app-version }}"
+        tracing.backend: "{{ bundle.parameters.tracing-backend }}"
+        tracing.address: "{{ bundle.parameters.tracing-address }}"
+        mtls.persistentStorage: "off"
+  - exec:
+      description: "Remove the default prom config from the cluster"
+      command: kubectl
+      arguments:
+        - "delete"
+        - "-n"
+        - "{{ bundle.parameters.mesh-namespace }}"
+        - "-f"
+        - "prometheus.yaml"
+  - exec:
+      description: "Add custom prometheus config to the cluster"
+      command: kubectl
+      arguments:
+        - "apply"
+        - "-n"
+        - "{{ bundle.parameters.mesh-namespace }}"
+        - "-f"
+        - "prometheus.yaml"
+  - exec:
+      description: "Restart the prom container"
+      command: kubectl
+      arguments:
+        - "delete"
+        - "pods"
+        - "-n"
+        - "{{ bundle.parameters.mesh-namespace }}"
+        - "-l"
+        - "app.kubernetes.io/name=prometheus"
+  - exec:
+      description: "Restart the pods in the target namespace to inject sidecars"
+      command: kubectl
+      arguments:
+        - "delete"
+        - "pods"
+        - "-n"
+        - "{{ bundle.parameters.enabled-namespaces }}"
+        - "--all"
+
+upgrade:
+  - helm3:
+      description: "Upgrade NGINX Service Mesh to the latest version"
+      name: nginx-service-mesh
+      namespace: "{{ bundle.parameters.mesh-namespace }}"
+      chart: nginx-stable/nginx-service-mesh
+      upsert: true
+      version: "{{ bundle.parameters.chart-version }}"
+      wait: true
+      values:
+        - /cnab/app/chart-values.yaml
+      set:
+        deployGrafana: "{{ bundle.parameters.deploy-grafana }}"
+        autoInjection.disable: true
+        autoInjection.enabledNamespaces: "{ {{ bundle.parameters.enabled-namespaces }} }"
+        registry.server: "{{ bundle.parameters.registry }}"
+        registry.imageTag: "{{ bundle.parameters.app-version }}"
+        tracing.backend: "{{ bundle.parameters.tracing-backend }}"
+        tracing.address: "{{ bundle.parameters.tracing-address }}"
+        mtls.persistentStorage: "off"
+
+uninstall:
+  - helm3:
+      description: "Uninstall NGINX Mesh From The Cluster."
+      namespace: "{{ bundle.parameters.mesh-namespace }}"
+      releases:
+        - nginx-service-mesh
+      wait: true
+
+
+status:
+  - helm3:
+      description: "NGINX Mesh Helm Status"
+      arguments:
+        - status
+        - nginx-service-mesh
+      flags:
+        o: yaml

@@ -1,0 +1,87 @@
+name: cert-manager
+version: 0.0.1
+description: "A cert-manager porter bundle"
+registry: ghcr.io/clhain
+
+mixins:
+  - helm3:
+      clientVersion: v3.7.2
+      repositories:
+        jetstack:
+          url: "https://charts.jetstack.io"
+  - kubernetes:
+      clientVersion: v1.23.1
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+
+parameters:
+  - name: chart-values
+    type: string
+    path: /cnab/app/chart-values.yaml
+    default: ''
+
+customActions:
+  status:
+    description: "Get the status of a helm3 release"
+    modifies: false
+    stateless: true
+
+install:
+  - helm3:
+      description: "Install Cert Manager"
+      name: cert-manager
+      namespace: cert-manager
+      chart: jetstack/cert-manager
+      upsert: true
+      version: v1.6.1
+      wait: true
+      values:
+        - /cnab/app/chart-values.yaml
+      set:
+        installCRDs: true
+  - kubernetes:
+      description: "Create Issuer Resource"
+      wait: true
+      manifests:
+        - /cnab/app/manifest/selfsigned-issuer.yaml
+
+upgrade:
+  - helm3:
+      description: "Upgrade Cert-Manager"
+      name: cert-manager
+      chart: jetstack/cert-manager
+      upsert: true
+      version: v1.6.1
+      namespace: cert-manager
+      values:
+        - /cnab/app/chart-values.yaml
+      set:
+        installCRDs: true
+  - kubernetes:
+      description: "Upgrade Issuer Resource"
+      wait: true
+      manifests:
+        - /cnab/app/manifest/selfsigned-issuer.yaml
+
+uninstall:
+  - kubernetes:
+      description: "Uninstall Issuer Resource"
+      wait: true
+      manifests:
+        - /cnab/app/manifest/selfsigned-issuer.yaml
+  - helm3:
+      description: "Uninstall Cert-Manager"
+      releases:
+        - cert-manager
+      namespace: cert-manager
+
+status:
+  - helm3:
+      description: "Cert-Manager Status"
+      arguments:
+        - status
+        - cert-manager
+      flags:
+        o: yaml

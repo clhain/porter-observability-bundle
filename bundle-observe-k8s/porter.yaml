@@ -1,0 +1,74 @@
+name: observe-k8s
+version: 0.0.1
+description: "An Observe Inc Porter Bundle"
+registry: ghcr.io/clhain
+dockerfile: Dockerfile.tmpl
+
+mixins:
+  - exec:
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+  - name: observe-customer
+    env: OBSERVE_CUSTOMER
+  - name: observe-token
+    env: OBSERVE_TOKEN
+
+parameters:
+  - name: cluster-name
+    type: string
+    default: MyCluster
+
+install:
+  - exec:
+      description: "Add observe components to the cluster"
+      command: kubectl
+      arguments:
+        - "apply"
+        - "-f"
+        - "https://api.observeinc.com/v1/kubernetes/manifest?otel=true&prometheus=2001"
+  - exec:
+      description: "Create secrets for Observe"
+      command: kubectl
+      arguments:
+        - "-n"
+        - "observe"
+        - "create"
+        - "secret"
+        - "generic"
+        - "credentials"
+        - "--from-literal=customer={{ bundle.credentials.observe-customer }}"
+        - "--from-literal=token={{ bundle.credentials.observe-token }}"
+  - exec:
+      description: "Annotate the cluster with the correct observe name."
+      command: kubectl
+      arguments:
+        - annotate
+        - namespace
+        - observe
+        - "observeinc.com/cluster-name={{ bundle.parameters.cluster-name }}"
+upgrade:
+  - exec:
+      description: "Re-apply observe components to the cluster"
+      command: kubectl
+      arguments:
+        - "apply"
+        - "-f"
+        - "https://api.observeinc.com/v1/kubernetes/manifest?otel=true&prometheus=2001"
+  - exec:
+      description: "Annotate the cluster with the correct observe name."
+      command: kubectl
+      arguments:
+        - annotate
+        - namespace
+        - observe
+        - "observeinc.com/cluster-name={{ bundle.parameters.cluster-name }}"
+uninstall:
+  - exec:
+      description: "Re-apply observe components to the cluster"
+      command: kubectl
+      arguments:
+        - "delete"
+        - "-f"
+        - "https://api.observeinc.com/v1/kubernetes/manifest"

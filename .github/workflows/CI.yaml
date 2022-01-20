@@ -1,0 +1,34 @@
+name: porter-bundle-publish
+
+on:
+  push:
+    branches: [ master ]
+
+# Set up environment variables needed for the bundle.
+# If these are sensitive, they should be set as secrets in the repository.
+# To do this, go to settings -> secrets -> new secret.
+env:
+  REGISTRY: ghcr.io
+
+# A workflow can be made of many jobs, but this example puts all the steps under one job.
+jobs:
+  # Publish is the name of this job.
+  publish:
+    if: github.event_name == 'push'
+    # Specify the type of machine you want the job to run on. We chose ubuntu-latest.
+    runs-on: ubuntu-latest
+    steps:
+      # Check out code
+      - uses: actions/checkout@v1
+      - name: Setup Porter
+        uses: getporter/gh-action@v0.1.3
+      - name: Get Mixins
+        run: make get-mixins
+      - name: Docker Login
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish
+        run: REGISTRY=ghcr.io/clhain make publish-bundles
