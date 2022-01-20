@@ -25,7 +25,7 @@ endif
 .PHONY: publish-bundles
 publish-bundles:
 ifndef BUNDLE
-	$(call all-bundles,publish-bundle)
+	$(call all-bundles,publish-bundles)
 else
 	@echo Publishing $(BUNDLE)...
 	@cd $(BUNDLE) && porter publish --registry $(REGISTRY)
