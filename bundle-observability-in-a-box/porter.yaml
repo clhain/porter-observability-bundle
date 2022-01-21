@@ -1,0 +1,50 @@
+name: observability-in-a-box
+version: 0.0.1
+description: "An Observability Porter Bundle"
+registry: ghcr.io/clhain
+
+mixins:
+  - exec:
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+  - name: observe-customer
+    env: OBSERVE_CUSTOMER
+  - name: observe-token
+    env: OBSERVE_TOKEN
+parameters:
+  - name: cluster-name
+    type: string
+    default: MyCluster
+
+dependencies:
+  # Requires volterra-ns-vk8s#name (not name_prefix) since dependency output can't be passed to other dependency
+  - name: cert-manager
+    reference: ghcr.io/clhain/cert-manager:v0.0.1
+  - name: nginx-service-mesh
+    reference: ghcr.io/clhain/nginx-service-mesh:v0.0.1
+  - name: observe-k8s
+    reference: ghcr.io/clhain/observe-k8s:v0.0.1
+    parameters:
+      cluster-name: observability-demo
+
+
+install:
+  - exec:
+      description: "Echo some text since we need an action"
+      command: echo
+      arguments:
+        - "Happy Observing..."
+upgrade:
+  - exec:
+      description: "Echo some text since we need an action"
+      command: echo
+      arguments:
+        - "Happy Observing..."
+uninstall:
+  - exec:
+      description: "Echo some text since we need an action"
+      command: echo
+      arguments:
+        - "Happy Observing..."
