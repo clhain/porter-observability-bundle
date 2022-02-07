@@ -148,3 +148,4 @@ status:
         - nginx-service-mesh
       flags:
         o: yaml
+        n: "{{ bundle.parameters.mesh-namespace }}"

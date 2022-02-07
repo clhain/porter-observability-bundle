@@ -1,0 +1,16 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: "$VIRTUAL_SERVER_NAME"
+spec:
+  host: "$VIRTUAL_SERVER_HOSTNAME"
+  policies:
+  - name: "$VIRTUAL_SERVER_NAME-waf-policy"
+  upstreams:
+  - name: "$VIRTUAL_SERVER_UPSTREAM_SERVICE_NAME"
+    service: "$VIRTUAL_SERVER_UPSTREAM_SERVICE_NAME"
+    port: $VIRTUAL_SERVER_UPSTREAM_SERVICE_PORT
+  routes:
+  - path: /
+    action:
+      pass: "$VIRTUAL_SERVER_UPSTREAM_SERVICE_NAME"

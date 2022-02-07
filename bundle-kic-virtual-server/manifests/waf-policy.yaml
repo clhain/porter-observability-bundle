@@ -1,0 +1,83 @@
+# Example fron https://github.com/nginxinc/kubernetes-ingress/tree/v2.1.0/examples/custom-resources/waf
+---
+apiVersion: k8s.nginx.org/v1
+kind: Policy
+metadata:
+  name: "$VIRTUAL_SERVER_NAME-waf-policy"
+spec:
+  waf:
+    enable: true
+    apPolicy: "$VIRTUAL_SERVER_NAME-dataguard-alarm"
+    securityLog:
+      enable: true
+      apLogConf: "$VIRTUAL_SERVER_NAME-logconf"
+      logDest: "stderr"
+
+---
+apiVersion: appprotect.f5.com/v1beta1
+kind: APLogConf
+metadata:
+  name: "$VIRTUAL_SERVER_NAME-logconf"
+spec:
+  content:
+    format: default
+    max_message_size: 64k
+    max_request_size: any
+  filter:
+    request_type: all
+
+---
+apiVersion: appprotect.f5.com/v1beta1
+kind: APPolicy
+metadata:
+  name: "$VIRTUAL_SERVER_NAME-dataguard-alarm"
+spec:
+  policy:
+    signature-requirements:
+    - tag: Fruits
+    signature-sets:
+    - name: apple_sigs
+      block: true
+      signatureSet:
+        filter:
+          tagValue: Fruits
+          tagFilter: eq
+    applicationLanguage: utf-8
+    blocking-settings:
+      violations:
+      - alarm: true
+        block: false
+        name: VIOL_DATA_GUARD
+    data-guard:
+      creditCardNumbers: true
+      enabled: true
+      enforcementMode: ignore-urls-in-list
+      enforcementUrls: []
+      lastCcnDigitsToExpose: 4
+      lastSsnDigitsToExpose: 4
+      maskData: true
+      usSocialSecurityNumbers: true
+    enforcementMode: blocking
+    name: "$VIRTUAL_SERVER_NAME-dataguard-alarm"
+    template:
+      name: POLICY_TEMPLATE_NGINX_BASE
+
+---
+apiVersion: appprotect.f5.com/v1beta1
+kind: APUserSig
+metadata:
+  name: "$VIRTUAL_SERVER_NAME-apple"
+spec:
+  signatures:
+  - accuracy: medium
+    attackType:
+      name: Brute Force Attack
+    description: Medium accuracy user defined signature with tag (Fruits)
+    name: Apple_medium_acc
+    risk: medium
+    rule: content:"apple"; nocase;
+    signatureType: request
+    systems:
+    - name: Microsoft Windows
+    - name: Unix/Linux
+  tag: Fruits

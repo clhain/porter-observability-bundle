@@ -1,0 +1,54 @@
+name: online-boutique
+version: 0.0.1
+description: "Online Boutique Porter Bundle"
+registry: ghcr.io/clhain
+
+mixins:
+- kubernetes:
+    clientVersion: v1.20.13
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+
+parameters:
+  - name: namespace
+    type: string
+    default: default
+  - name: hostname
+    type: string
+
+dependencies:
+  # Requires volterra-ns-vk8s#name (not name_prefix) since dependency output can't be passed to other dependency
+  - name: cert-manager
+    reference: ghcr.io/clhain/kic-virtual-server:v0.0.1
+    parameters:
+      namespace: "{{ bundle.parameters.namespace }}"
+      virtual_server_name: "online-boutique"
+      virtual_server_upstream_service_name: "frontend"
+      virtual_server_upstream_service_port: "80"
+      virtual_server_hostname: "{{ bundle.parameters.hostname }}"
+
+install:
+  - kubernetes:
+      description: "Install Online Boutique App"
+      manifests:
+        - /cnab/app/microservices-demo/release/kubernetes-manifests.yaml
+      namespace: "{{ bundle.parameters.namespace }}"
+      wait: true
+
+upgrade:
+  - kubernetes:
+      description: "Install Online Boutique App"
+      manifests:
+        - /cnab/app/microservices-demo/release/kubernetes-manifests.yaml
+      namespace: "{{ bundle.parameters.namespace }}"
+      wait: true
+
+uninstall:
+  - kubernetes:
+      description: "Install Online Boutique App"
+      manifests:
+        - /cnab/app/microservices-demo/release/kubernetes-manifests.yaml
+      namespace: "{{ bundle.parameters.namespace }}"
+      wait: true

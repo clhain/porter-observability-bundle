@@ -1,0 +1,116 @@
+name: nginx-ingress-controller
+version: 0.0.1
+description: "An NGINX Ingress Controller Porter Bundle"
+registry: ghcr.io/clhain
+
+mixins:
+  - exec
+  - helm3:
+      clientVersion: v3.7.2
+      repositories:
+        nginx-stable:
+          url: "https://helm.nginx.com/stable"
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+
+customActions:
+  status:
+    description: "Get the status of a helm3 release"
+    modifies: false
+    stateless: true
+
+parameters:
+  - name: repository
+    type: string
+    default: registry.hub.docker.com/nginx/nginx-ingress
+  - name: chart-version
+    type: string
+    default: "0.12.0"
+  - name: app-version
+    type: string
+    default: "2.1.0-0t"
+  - name: chart-values
+    type: string
+    path: /cnab/app/chart-values-custom.yaml
+    default: ''
+  - name: namespace
+    type: string
+    default: 'nginx-ingress'
+  - name: nginxplus
+    type: boolean
+    default: false
+
+install:
+  - exec:
+      description: "Check for chart-values and move default into place if none found."
+      command: ./helpers.sh
+      arguments:
+        - handle-chart-values
+        - "{{ bundle.parameters.nginxplus }}"
+  - helm3:
+      description: "Install NGINX Ingress Controller to the cluster"
+      name: nginx-ingress
+      namespace: "{{ bundle.parameters.namespace }}"
+      chart: nginx-stable/nginx-ingress
+      upsert: true
+      version: "{{ bundle.parameters.chart-version }}"
+      wait: true
+      values:
+        - /cnab/app/chart-values.yaml
+      set:
+        controller.image.repository: "{{ bundle.parameters.repository }}"
+        controller.image.tag: "{{ bundle.parameters.app-version }}"
+
+upgrade:
+  - exec:
+      description: "Check for chart-values and move default into place if none found."
+      command: ./helpers.sh
+      arguments:
+        - handle-chart-values
+        - "{{ bundle.parameters.nginxplus }}"
+  - helm3:
+      description: "Install NGINX Ingress Controller to the cluster"
+      name: nginx-ingress
+      namespace: "{{ bundle.parameters.namespace }}"
+      chart: nginx-stable/nginx-ingress
+      upsert: true
+      version: "{{ bundle.parameters.chart-version }}"
+      wait: true
+      values:
+        - /cnab/app/chart-values.yaml
+      set:
+        controller.image.repository: "{{ bundle.parameters.repository }}"
+        controller.image.tag: "{{ bundle.parameters.app-version }}"
+
+uninstall:
+  - exec:
+      description: "Check for chart-values and move default into place if none found."
+      command: ./helpers.sh
+      arguments:
+        - handle-chart-values
+        - "{{ bundle.parameters.nginxplus }}"
+  - helm3:
+      description: "Uninstall NGINX Ingress Controller From The Cluster."
+      namespace: "{{ bundle.parameters.namespace }}"
+      releases:
+        - nginx-ingress
+      wait: true
+
+
+status:
+  - exec:
+      description: "Check for chart-values and move default into place if none found."
+      command: ./helpers.sh
+      arguments:
+        - handle-chart-values
+        - "{{ bundle.parameters.nginxplus }}"
+  - helm3:
+      description: "NGINX Ingress Controller Helm Status"
+      arguments:
+        - status
+        - nginx-ingress
+      flags:
+        o: yaml
+        n: "{{ bundle.parameters.namespace }}"

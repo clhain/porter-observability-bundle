@@ -1,0 +1,82 @@
+name: kic-virtual-server
+version: 0.0.1
+description: "Kuberenetes Ingress Virtual Server Porter Bundle"
+registry: ghcr.io/clhain
+
+mixins:
+- exec
+- kubernetes:
+    clientVersion: v1.20.13
+
+dockerfile: Dockerfile.tmpl
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+
+parameters:
+  - name: namespace
+    type: string
+    default: default
+  - name: virtual_server_name
+    type: string
+  - name: virtual_server_hostname
+    type: string
+  - name: virtual_server_upstream_service_name
+    type: string
+  - name: virtual_server_upstream_service_port
+    type: string
+
+install:
+  - exec:
+      description: "Render the manifests with parameters from env"
+      command: ./helpers.sh
+      arguments:
+        - render
+      suffix-arguments:
+        - VIRTUAL_SERVER_NAME={{ bundle.parameters.virtual_server_name }}
+        - VIRTUAL_SERVER_HOSTNAME={{ bundle.parameters.virtual_server_hostname }}
+        - VIRTUAL_SERVER_UPSTREAM_SERVICE_NAME={{ bundle.parameters.virtual_server_upstream_service_name }}
+        - VIRTUAL_SERVER_UPSTREAM_SERVICE_PORT={{ bundle.parameters.virtual_server_upstream_service_port }}
+  - kubernetes:
+      description: "Install Virtual Server"
+      manifests:
+        - /cnab/app/manifests/rendered
+      namespace: "{{ bundle.parameters.namespace }}"
+      wait: true
+
+upgrade:
+  - exec:
+      description: "Render the manifests with parameters from env"
+      command: ./helpers.sh
+      arguments:
+        - render
+      suffix-arguments:
+        - VIRTUAL_SERVER_NAME={{ bundle.parameters.virtual_server_name }}
+        - VIRTUAL_SERVER_HOSTNAME={{ bundle.parameters.virtual_server_hostname }}
+        - VIRTUAL_SERVER_UPSTREAM_SERVICE_NAME={{ bundle.parameters.virtual_server_upstream_service_name }}
+        - VIRTUAL_SERVER_UPSTREAM_SERVICE_PORT={{ bundle.parameters.virtual_server_upstream_service_port }}
+  - kubernetes:
+      description: "Install Virtual Server"
+      manifests:
+        - /cnab/app/manifests/rendered
+      namespace: "{{ bundle.parameters.namespace }}"
+      wait: true
+
+uninstall:
+  - exec:
+      description: "Render the manifests with parameters from env"
+      command: ./helpers.sh
+      arguments:
+        - render
+      suffix-arguments:
+        - VIRTUAL_SERVER_NAME={{ bundle.parameters.virtual_server_name }}
+        - VIRTUAL_SERVER_HOSTNAME={{ bundle.parameters.virtual_server_hostname }}
+        - VIRTUAL_SERVER_UPSTREAM_SERVICE_NAME={{ bundle.parameters.virtual_server_upstream_service_name }}
+        - VIRTUAL_SERVER_UPSTREAM_SERVICE_PORT={{ bundle.parameters.virtual_server_upstream_service_port }}
+  - kubernetes:
+      description: "Install Virtual Server"
+      manifests:
+        - /cnab/app/manifests/rendered
+      namespace: "{{ bundle.parameters.namespace }}"
+      wait: true
