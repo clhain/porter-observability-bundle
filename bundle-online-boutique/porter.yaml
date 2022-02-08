@@ -15,19 +15,6 @@ parameters:
   - name: namespace
     type: string
     default: default
-  - name: hostname
-    type: string
-
-dependencies:
-  # Requires volterra-ns-vk8s#name (not name_prefix) since dependency output can't be passed to other dependency
-  - name: cert-manager
-    reference: ghcr.io/clhain/kic-virtual-server:v0.0.1
-    parameters:
-      namespace: "{{ bundle.parameters.namespace }}"
-      virtual_server_name: "online-boutique"
-      virtual_server_upstream_service_name: "frontend"
-      virtual_server_upstream_service_port: "80"
-      virtual_server_hostname: "{{ bundle.parameters.hostname }}"
 
 install:
   - kubernetes:

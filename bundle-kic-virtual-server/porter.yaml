@@ -57,7 +57,7 @@ upgrade:
         - VIRTUAL_SERVER_UPSTREAM_SERVICE_NAME={{ bundle.parameters.virtual_server_upstream_service_name }}
         - VIRTUAL_SERVER_UPSTREAM_SERVICE_PORT={{ bundle.parameters.virtual_server_upstream_service_port }}
   - kubernetes:
-      description: "Install Virtual Server"
+      description: "Upgrade Virtual Server"
       manifests:
         - /cnab/app/manifests/rendered
       namespace: "{{ bundle.parameters.namespace }}"
@@ -75,7 +75,7 @@ uninstall:
         - VIRTUAL_SERVER_UPSTREAM_SERVICE_NAME={{ bundle.parameters.virtual_server_upstream_service_name }}
         - VIRTUAL_SERVER_UPSTREAM_SERVICE_PORT={{ bundle.parameters.virtual_server_upstream_service_port }}
   - kubernetes:
-      description: "Install Virtual Server"
+      description: "Uninstall Virtual Server"
       manifests:
         - /cnab/app/manifests/rendered
       namespace: "{{ bundle.parameters.namespace }}"
