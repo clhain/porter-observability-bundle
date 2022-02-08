@@ -1,5 +1,5 @@
 name: everything
-version: 0.0.1
+version: 0.0.2
 description: "An Everything Porter Bundle"
 registry: ghcr.io/clhain
 
@@ -37,9 +37,7 @@ dependencies:
       repository: "us.gcr.io/f5-gcs-7506-ptg-deos-octo-dev/nginx-plus-ingress"
       nginxplus: true
   - name: online-boutique
-    reference: ghcr.io/clhain/online-boutique:v0.0.1
-    parameters:
-      hostname: "boutique.example.com"
+    reference: ghcr.io/clhain/online-boutique:v0.0.2
   - name: virtual-server
     reference: ghcr.io/clhain/kic-virtual-server:v0.0.1
     parameters:
