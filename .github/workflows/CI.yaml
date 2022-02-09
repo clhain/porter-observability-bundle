@@ -20,7 +20,8 @@ jobs:
     steps:
       # Check out code
       - uses: actions/checkout@v2
-        submodules: true
+        with:
+          submodules: true
       - name: Setup Porter
         uses: getporter/gh-action@v0.1.3
       - name: Get Mixins
