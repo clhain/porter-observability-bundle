@@ -19,7 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Check out code
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        submodules: true
       - name: Setup Porter
         uses: getporter/gh-action@v0.1.3
       - name: Get Mixins
