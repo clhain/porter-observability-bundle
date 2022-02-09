@@ -1,5 +1,5 @@
 name: nginx-service-mesh
-version: 0.0.1
+version: 0.0.2
 description: "An NGINX Service Mesh Porter Bundle"
 registry: ghcr.io/clhain
 dockerfile: Dockerfile.tmpl
@@ -11,6 +11,8 @@ mixins:
       repositories:
         nginx-stable:
           url: "https://helm.nginx.com/stable"
+        prometheus-community:
+          url: "https://prometheus-community.github.io/helm-charts"
 
 credentials:
   - name: kubeconfig
@@ -29,6 +31,9 @@ parameters:
   - name: chart-version
     type: string
     default: "0.3.1"
+  - name: prom-adapter-chart-version
+    type: string
+    default: "3.0.1"
   - name: app-version
     type: string
     default: "1.3.1"
@@ -109,7 +114,16 @@ install:
         - "-n"
         - "{{ bundle.parameters.enabled-namespaces }}"
         - "--all"
-
+  - helm3:
+      description: "Install Prometheus Adapter for Custom Metrics"
+      name: nsm-prometheus-adapter
+      namespace: "{{ bundle.parameters.mesh-namespace }}"
+      chart: prometheus-community/prometheus-adapter
+      upsert: true
+      version: "{{ bundle.parameters.prom-adapter-chart-version }}"
+      wait: true
+      values:
+        - /cnab/app/prom-adapter-chart-values.yaml
 upgrade:
   - helm3:
       description: "Upgrade NGINX Service Mesh to the latest version"
@@ -130,7 +144,53 @@ upgrade:
         tracing.backend: "{{ bundle.parameters.tracing-backend }}"
         tracing.address: "{{ bundle.parameters.tracing-address }}"
         mtls.persistentStorage: "off"
-
+  - exec:
+      description: "Remove the default prom config from the cluster"
+      command: kubectl
+      arguments:
+        - "delete"
+        - "-n"
+        - "{{ bundle.parameters.mesh-namespace }}"
+        - "-f"
+        - "prometheus.yaml"
+  - exec:
+      description: "Add custom prometheus config to the cluster"
+      command: kubectl
+      arguments:
+        - "apply"
+        - "-n"
+        - "{{ bundle.parameters.mesh-namespace }}"
+        - "-f"
+        - "prometheus.yaml"
+  - exec:
+      description: "Restart the prom container"
+      command: kubectl
+      arguments:
+        - "delete"
+        - "pods"
+        - "-n"
+        - "{{ bundle.parameters.mesh-namespace }}"
+        - "-l"
+        - "app.kubernetes.io/name=prometheus"
+  - exec:
+      description: "Restart the pods in the target namespace to inject sidecars"
+      command: kubectl
+      arguments:
+        - "delete"
+        - "pods"
+        - "-n"
+        - "{{ bundle.parameters.enabled-namespaces }}"
+        - "--all"
+  - helm3:
+      description: "Update Prometheus Adapter for Custom Metrics"
+      name: nsm-prometheus-adapter
+      namespace: "{{ bundle.parameters.mesh-namespace }}"
+      chart: prometheus-community/prometheus-adapter
+      upsert: true
+      version: "{{ bundle.parameters.prom-adapter-chart-version }}"
+      wait: true
+      values:
+        - /cnab/app/prom-adapter-chart-values.yaml
 uninstall:
   - helm3:
       description: "Uninstall NGINX Mesh From The Cluster."
@@ -139,6 +199,12 @@ uninstall:
         - nginx-service-mesh
       wait: true
 
+  - helm3:
+      description: "Uninstall Prometheus Adapter for Custom Metrics"
+      namespace: "{{ bundle.parameters.mesh-namespace }}"
+      releases: 
+        - nsm-prometheus-adapter
+      wait: true
 
 status:
   - helm3:
@@ -146,6 +212,14 @@ status:
       arguments:
         - status
         - nginx-service-mesh
+      flags:
+        o: yaml
+        n: "{{ bundle.parameters.mesh-namespace }}"
+  - helm3:
+      description: "Prometheus Adapter Helm Status"
+      arguments:
+        - status
+        - nsm-prometheus-adapter
       flags:
         o: yaml
         n: "{{ bundle.parameters.mesh-namespace }}"

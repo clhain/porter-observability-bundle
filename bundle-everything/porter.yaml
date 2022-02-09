@@ -17,15 +17,18 @@ parameters:
   - name: cluster-name
     type: string
     default: MyCluster
-  - name: hostname
-    type: string
+  # - name: namespace
+  #   type: string
+  #   default: default
+  # - name: hostname
+  #   type: string
 
 dependencies:
   # Requires volterra-ns-vk8s#name (not name_prefix) since dependency output can't be passed to other dependency
   - name: cert-manager
     reference: ghcr.io/clhain/cert-manager:v0.0.1
   - name: nginx-service-mesh
-    reference: ghcr.io/clhain/nginx-service-mesh:v0.0.1
+    reference: ghcr.io/clhain/nginx-service-mesh:v0.0.2
   - name: observe-k8s
     reference: ghcr.io/clhain/observe-k8s:v0.0.1
     parameters:
@@ -37,15 +40,15 @@ dependencies:
       repository: "us.gcr.io/f5-gcs-7506-ptg-deos-octo-dev/nginx-plus-ingress"
       nginxplus: true
   - name: online-boutique
-    reference: ghcr.io/clhain/online-boutique:v0.0.2
+    reference: ghcr.io/clhain/online-boutique:v0.0.3
   - name: virtual-server
     reference: ghcr.io/clhain/kic-virtual-server:v0.0.1
     parameters:
-      namespace: "{{ bundle.parameters.namespace }}"
+      namespace: "default"
       virtual_server_name: "online-boutique"
       virtual_server_upstream_service_name: "frontend"
       virtual_server_upstream_service_port: "80"
-      virtual_server_hostname: "{{ bundle.parameters.hostname }}"
+      virtual_server_hostname: "whatever.example.com"
 
 install:
   - exec:
