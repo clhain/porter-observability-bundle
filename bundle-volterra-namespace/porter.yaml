@@ -1,9 +1,10 @@
 mixins:
+  - exec
   - terraform:
       clientVersion: 1.0.4
 
 name: volterra-namespace
-version: 0.0.1
+version: 0.0.2
 description: "A porter bundle which deploys a volterra namespace."
 registry: ghcr.io/clhain
 
@@ -32,6 +33,13 @@ uninstall:
 show:
   - terraform:
       description: "Invoke 'terraform show'"
+
+reAuth:
+  - exec:
+      description: "This is here because bundle dependencies have to have the same actions as their parents."
+      command: echo
+      arguments:
+        - "This does nothing..."
 
 parameters:
   - name: name
