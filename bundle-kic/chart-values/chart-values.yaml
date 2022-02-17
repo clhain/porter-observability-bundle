@@ -14,6 +14,8 @@ controller:
   service:
     annotations:
       co.elastic.logs/module: nginx
+      cloud.google.com/load-balancer-type: "$LOADBALANCER_TYPE"
+    loadBalancerIP: $LOADBALANCER_IP
     extraLabels:
       app: kic-nginx-ingress
     customPorts:

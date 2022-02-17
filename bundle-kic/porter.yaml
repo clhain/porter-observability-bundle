@@ -1,7 +1,9 @@
 name: nginx-ingress-controller
-version: 0.0.1
+version: 0.0.2
 description: "An NGINX Ingress Controller Porter Bundle"
 registry: ghcr.io/clhain
+
+dockerfile: Dockerfile.tmpl
 
 mixins:
   - exec
@@ -41,14 +43,32 @@ parameters:
   - name: nginxplus
     type: boolean
     default: false
+  - name: loadbalancer_type
+    type: string
+    default: "External"
+  - name: loadbalancer_ip
+    type: string
+    default: ""
 
 install:
+  - exec:
+      description: "Render the default chart values with parameters from env"
+      command: ./helpers.sh
+      arguments:
+        - render
+      suffix-arguments:
+        - LOADBALANCER_TYPE={{ bundle.parameters.loadbalancer_type }}
+        - LOADBALANCER_IP={{ bundle.parameters.loadbalancer_ip }}
   - exec:
       description: "Check for chart-values and move default into place if none found."
       command: ./helpers.sh
       arguments:
         - handle-chart-values
         - "{{ bundle.parameters.nginxplus }}"
+  - exec:
+      command: cat
+      arguments: 
+        - ./chart-values.yaml
   - helm3:
       description: "Install NGINX Ingress Controller to the cluster"
       name: nginx-ingress
@@ -64,6 +84,14 @@ install:
         controller.image.tag: "{{ bundle.parameters.app-version }}"
 
 upgrade:
+  - exec:
+      description: "Render the default chart values with parameters from env"
+      command: ./helpers.sh
+      arguments:
+        - render
+      suffix-arguments:
+        - LOADBALANCER_TYPE={{ bundle.parameters.loadbalancer_type }}
+        - LOADBALANCER_IP={{ bundle.parameters.loadbalancer_ip }}
   - exec:
       description: "Check for chart-values and move default into place if none found."
       command: ./helpers.sh
@@ -85,6 +113,14 @@ upgrade:
         controller.image.tag: "{{ bundle.parameters.app-version }}"
 
 uninstall:
+  - exec:
+      description: "Render the default chart values with parameters from env"
+      command: ./helpers.sh
+      arguments:
+        - render
+      suffix-arguments:
+        - LOADBALANCER_TYPE={{ bundle.parameters.loadbalancer_type }}
+        - LOADBALANCER_IP={{ bundle.parameters.loadbalancer_ip }}
   - exec:
       description: "Check for chart-values and move default into place if none found."
       command: ./helpers.sh
