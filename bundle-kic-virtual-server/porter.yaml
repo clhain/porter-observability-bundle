@@ -1,5 +1,5 @@
 name: kic-virtual-server
-version: 0.0.1
+version: 0.0.2
 description: "Kuberenetes Ingress Virtual Server Porter Bundle"
 registry: ghcr.io/clhain
 
