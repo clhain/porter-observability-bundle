@@ -1,0 +1,67 @@
+name: porter-bundle-publish
+
+on:
+  push:
+    branches:
+      - "*"
+    tags:
+      - v*
+
+# Set up environment variables needed for the bundle.
+# If these are sensitive, they should be set as secrets in the repository.
+# To do this, go to settings -> secrets -> new secret.
+env:
+  REGISTRY: ghcr.io
+
+# A workflow can be made of many jobs, but this example puts all the steps under one job.
+jobs:
+  # Publish is the name of this job.
+  publish:
+    if: github.event_name == 'push'
+    # Specify the type of machine you want the job to run on. We chose ubuntu-latest.
+    runs-on: ubuntu-latest
+    steps:
+      # Check out code
+      - uses: actions/checkout@v1
+      # Use Porter GH action to set up Porter.
+      # You can specify the version of Porter that you want installed by adding the lines for with and porter_version as explained above.
+      - name: Setup Porter
+        uses: getporter/gh-action@v0.1.3
+      - name: Install Porter mixins
+        run: |
+          porter mixins install gcloud
+          porter mixins install terraform
+      # Run install
+      #- name: Porter install
+      #  run: porter install
+      # Run upgrade
+      #- name: Porter upgrade
+      #  run: porter upgrade
+      # Run uninstall
+      #- name: Porter uninstall
+      #  run: porter uninstall
+      # Login to github container registry to publish the bundle
+      - name: Docker Login
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: get porter bundle version
+        id: getBundleVersion
+        uses: mikefarah/yq@v4.9.6
+        with:
+          cmd: yq e '.version' porter.yaml
+
+      # Run publish.
+      # If any of the porter commands above fail, the workflow will stop, so your bundle will only be published if it works properly.
+      - name: Porter Publish
+        run: |
+          # Strip git ref prefix from version
+          BUNDLE_VERSION=${{ steps.getBundleVersion.outputs.result }}
+          REF_VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          CI_VERSION=${BUNDLE_VERSION}-${REF_VERSION}
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && CI_VERSION=$(echo ${REF_VERSION} | sed -e 's/^v//')
+
+          porter build --version $CI_VERSION && porter publish

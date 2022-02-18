@@ -1,0 +1,230 @@
+mixins:
+  - gcloud
+  - terraform:
+      clientVersion: 1.1.5
+  - exec
+
+name: gcp-tenant
+version: 0.0.1
+description: "An example applab GCP based tenant"
+registry: ghcr.io/clhain
+dockerfile: Dockerfile.tmpl
+
+dependencies:
+  - name: volterra-namespace
+    reference: ghcr.io/clhain/volterra-namespace:v0.0.2
+    parameters:
+      volt_api_url: https://f5-octo.console.ves.volterra.io/api
+      name_prefix: applab-tenant
+
+parameters:
+  - name: tfstate
+    type: file
+    path: /cnab/app/terraform/terraform.tfstate
+    source:
+      output: tfstate
+
+  - name: machine_type
+    type: string
+    default: e2-standard-4
+    env: TF_VAR_machine_type
+
+  - name: gcp_project_id
+    type: string
+    env: TF_VAR_gcp_project_id
+    source:
+      output: gcp_project_id
+    # override the default applyTo for parameters with an output source
+    # so that it is required for install
+    applyTo:
+      - install
+      # User doesn't have to pass this in for subsequent actions,
+      # porter will inject it for upgrade and uninstall
+      - upgrade
+      - uninstall
+      - reAuth
+
+  - name: gcp_location
+    type: string
+    default: us-central1-a
+    env: TF_VAR_gcp_location
+
+  - name: gcp_region
+    type: string
+    default: us-central1
+    env: TF_VAR_gcp_region
+
+  - name: site_name
+    type: string
+    default: applab-us-central1
+    env: TF_VAR_site_name
+
+outputs:
+  - name: tfstate
+    type: file
+    path: /cnab/app/terraform/terraform.tfstate
+
+  - name: gcp_project_id
+    type: string
+    path: /cnab/app/gcp_project_id
+    applyTo:
+      # Tell porter to remember this value for subsequent actions
+      # after install, re-injecting it back into the bundle
+      - install
+
+  - name: cluster_name
+    type: string
+    applyTo:
+      - install
+
+  - name: region
+    type: string
+    applyTo:
+      - install
+
+  - name: vpc_subnet
+    type: string
+    path: /cnab/app/vpc_subnet
+    applyTo:
+      - install
+
+  - name: cluster_ingress_ip
+    type: string
+    applyTo:
+      - install
+
+  - name: kubeconfig_content
+    type: string
+    applyTo:
+      - install
+      - upgrade
+      - reAuth
+
+credentials:
+  - name: gcloud-key-file
+    path: /cnab/app/gcloud.json
+
+install:
+  - exec:
+      description: "stop-gap parameter persist"
+      command: ./add-output.sh
+      arguments:
+        - "{{ bundle.parameters.gcp_project_id }}"
+        - /cnab/app/gcp_project_id
+  - gcloud:
+      description: "Authenticate"
+      groups:
+        - auth
+      command: activate-service-account
+      flags:
+        key-file: gcloud.json
+  - exec:
+      description: "Determine the next available VPC Subnet"
+      command: ./helpers.sh
+      arguments:
+        - next_vpc_subnet
+      suffix-arguments:
+        - "{{ bundle.parameters.gcp_project_id }}"
+        - "{{ bundle.parameters.gcp_region }}"
+        - applab-
+      outputs:
+        - name: vpc_subnet
+          jsonPath: $.next_vpc_subnet
+  - terraform:
+      description: "Install Terraform assets"
+      vars:
+        vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
+        username: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
+      outputs:
+        - name: cluster_name
+        - name: region
+        - name: kubeconfig_content
+        - name: cluster_ingress_ip
+
+upgrade:
+  - gcloud:
+      description: "Authenticate"
+      groups:
+        - auth
+      command: activate-service-account
+      flags:
+        key-file: gcloud.json
+  - terraform:
+      description: "Upgrade Terraform assets"
+      vars:
+        vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
+        username: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
+      outputs:
+        - name: cluster_name
+        - name: region
+        - name: kubeconfig_content
+        - name: cluster_ingress_ip
+
+
+show:
+  - terraform:
+      description: "Invoke 'terraform show'"
+
+plan:
+  - gcloud:
+      description: "Authenticate"
+      groups:
+        - auth
+      command: activate-service-account
+      flags:
+        key-file: gcloud.json
+  - terraform:
+      description: "Invoke 'terraform plan'"
+      vars:
+        vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
+        username: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
+      flags:
+        no-color:
+        out: "/dev/null"
+        var: []
+
+reAuth:
+  - gcloud:
+      description: "Authenticate"
+      groups:
+        - auth
+      command: activate-service-account
+      flags:
+        key-file: gcloud.json
+  - terraform:
+      description: "Refresh Terraform assets including auth key"
+      vars:
+        vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
+        username: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
+      arguments:
+        - "apply"
+        - "-auto-approve"
+        - "-target=module.k8s_cluster.local_file.kubeconfig"
+      outputs:
+        - name: cluster_name
+        - name: region
+        - name: kubeconfig_content
+        - name: cluster_ingress_ip
+
+
+# Note: this can't be 'version:' as this would conflict with top-level field
+# Hence the need for the 'arguments:' override
+printVersion:
+  - terraform:
+      description: "Invoke 'terraform version'"
+      arguments:
+        - "version"
+
+uninstall:
+  - gcloud:
+      description: "Authenticate"
+      groups:
+        - auth
+      command: activate-service-account
+      flags:
+        key-file: gcloud.json
+  - terraform:
+      description: "Uninstall Terraform assets"
+      vars:
+        vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
+        username: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
