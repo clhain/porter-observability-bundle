@@ -1,0 +1,66 @@
+name: secure-global-ingress
+version: 0.0.3
+description: "A Secure Global Ingress Porter Bundle"
+registry: ghcr.io/clhain
+
+mixins:
+  - exec:
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+  - name: volterra_api_creds
+    path: /root/.volterra/creds.p12
+    description: The volterra API credential p12 file to use to authenticate to Volterra.
+  - name: volterra_api_cred_password
+    env: VES_P12_PASSWORD
+    description: The password for the volterra API credential p12 file.
+
+parameters:
+### DEPENDENCY PARAMETERS:
+# virtual-server#namespace: "default"
+# virtual-server#virtual_server_name: "online-boutique"
+# virtual-server#virtual_server_upstream_service_name: "frontend"
+# virtual-server#virtual_server_upstream_service_port: "80"
+# virtual-server#virtual_server_hostname: "porter1.volterra.boutique.otel.f5octo.dev"
+
+# volterra-gslb-waf#namespace=applab-tenant-f7f7100d
+# volterra-gslb-waf#cluster_ingress_ip=100.64.2.2
+# volterra-gslb-waf#site_name=applab-us-central1-gcp-vpc
+# volterra-gslb-waf#app_fqdn=porter1.volterra.boutique.otel.f5octo.dev
+# volterra-gslb-waf#upstream_port=80
+
+## CMDLINE
+# porter install --cred all  --param virtual-server#namespace="default" --param virtual-server#virtual_server_name="online-boutique" --param virtual-server#virtual_server_upstream_service_name="frontend" --param virtual-server#virtual_server_upstream_service_port="80" --param virtual-server#virtual_server_hostname="porter1.volterra.boutique.otel.f5octo.dev" --param volterra-gslb-waf#namespace=applab-tenant-f7f7100d --param volterra-gslb-waf#cluster_ingress_ip=100.64.2.2 --param volterra-gslb-waf#site_name=applab-us-central1-gcp-vpc --param volterra-gslb-waf#app_fqdn=porter1.volterra.boutique.otel.f5octo.dev --param volterra-gslb-waf#upstream_port=80
+
+dependencies:
+  - name: virtual-server
+    reference: ghcr.io/clhain/kic-virtual-server:v0.0.2
+    # parameters:
+    #   namespace: "default"
+    #   virtual_server_name: "online-boutique"
+    #   virtual_server_upstream_service_name: "frontend"
+    #   virtual_server_upstream_service_port: "80"
+    #   virtual_server_hostname: "porter1.volterra.boutique.otel.f5octo.dev"
+  - name: volterra-gslb-waf
+    reference: ghcr.io/clhain/volterra-gslb-waf:v0.0.1
+    parameters:
+      volt_api_url: https://f5-octo.console.ves.volterra.io/api
+install:
+  - exec:
+      description: "Echo some text since we need an action"
+      command: echo
+      arguments:
+        - "Happy Observing..."
+upgrade:
+  - exec:
+      description: "Echo some text since we need an action"
+      command: echo
+      arguments:
+        - "Happy Observing..."
+uninstall:
+  - exec:
+      description: "Echo some text since we need an action"
+      command: echo
+      arguments:
+        - "Happy Observing..."

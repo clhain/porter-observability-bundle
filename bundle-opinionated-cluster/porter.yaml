@@ -1,0 +1,54 @@
+name: opinionated-cluster
+version: 0.0.3
+description: "An F5 Opinionated K8S Cluster Porter Bundle"
+registry: ghcr.io/clhain
+
+mixins:
+  - exec:
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+  - name: observe-customer
+    env: OBSERVE_CUSTOMER
+  - name: observe-token
+    env: OBSERVE_TOKEN
+
+# Required DEPENDENCY Parameters
+# porter install --cred all --param nginx-kic#loadbalancer_ip=100.64.2.2 --param observe-k8s#cluster-name=applab-tenant-5250acbc-hupxc-cluster
+# nginx-kic#loadbalancer_ip: {{ gcp_tenant.outputs.cluster_ingress_ip }}
+# observe-k8s#cluster-name: {{ gcp_tenant.outputs.cluster_name }}
+
+dependencies:
+  - name: cert-manager
+    reference: ghcr.io/clhain/cert-manager:v0.0.1
+  - name: nginx-service-mesh
+    reference: ghcr.io/clhain/nginx-service-mesh:v0.0.2
+  - name: nginx-kic
+    reference: ghcr.io/clhain/nginx-ingress-controller:v0.0.2
+    parameters:
+      loadbalancer_type: "Internal"
+      app-version: "2.1.0-ot-nap-dos"
+      repository: "us.gcr.io/f5-gcs-7506-ptg-deos-octo-dev/nginx-plus-ingress"
+      nginxplus: true
+  - name: observe-k8s
+    reference: ghcr.io/clhain/observe-k8s:v0.0.1
+
+install:
+  - exec:
+      description: "Echo some text since we need an action"
+      command: echo
+      arguments:
+        - "Enjoy your cluster..."
+upgrade:
+  - exec:
+      description: "Echo some text since we need an action"
+      command: echo
+      arguments:
+        - "Enjoy your cluster..."
+uninstall:
+  - exec:
+      description: "Echo some text since we need an action"
+      command: echo
+      arguments:
+        - "Enjoy your cluster..."
