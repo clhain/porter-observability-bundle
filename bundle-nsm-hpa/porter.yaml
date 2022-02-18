@@ -1,0 +1,80 @@
+name: nsm-hpa
+version: 0.0.1
+description: "NGINX Service Mesh Horizontal Pod Autoscaler Porter Bundle"
+registry: ghcr.io/clhain
+
+mixins:
+- exec
+- kubernetes:
+    clientVersion: v1.20.13
+
+dockerfile: Dockerfile.tmpl
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+
+parameters:
+  - name: namespace
+    type: string
+    default: default
+  - name: deployment_name
+    type: string
+    # http_requests or http_500_error
+  - name: metirc_type
+    type: string
+    default: http_requests
+  - name: threshold_value
+    type: string
+    default: "50"
+
+install:
+  - exec:
+      description: "Render the manifests with parameters from env"
+      command: ./helpers.sh
+      arguments:
+        - render
+      suffix-arguments:
+        - DEPLOYMENT_NAME={{ bundle.parameters.deployment_name }}
+        - METRIC_TYPE={{ bundle.parameters.metirc_type }}
+        - THRESHOLD_VALUE={{ bundle.parameters.threshold_value }}
+  - kubernetes:
+      description: "Install Virtual Server"
+      manifests:
+        - /cnab/app/manifests/rendered
+      namespace: "{{ bundle.parameters.namespace }}"
+      wait: true
+
+upgrade:
+  - exec:
+      description: "Render the manifests with parameters from env"
+      command: ./helpers.sh
+      arguments:
+        - render
+      suffix-arguments:
+        - DEPLOYMENT_NAME={{ bundle.parameters.deployment_name }}
+        - METRIC_TYPE={{ bundle.parameters.metirc_type }}
+        - THRESHOLD_VALUE={{ bundle.parameters.threshold_value }}
+  - kubernetes:
+      description: "Upgrade Virtual Server"
+      manifests:
+        - /cnab/app/manifests/rendered
+      namespace: "{{ bundle.parameters.namespace }}"
+      wait: true
+
+uninstall:
+  - exec:
+      description: "Render the manifests with parameters from env"
+      command: ./helpers.sh
+      arguments:
+        - render
+      suffix-arguments:
+        - DEPLOYMENT_NAME={{ bundle.parameters.deployment_name }}
+        - METRIC_TYPE={{ bundle.parameters.metirc_type }}
+        - THRESHOLD_VALUE={{ bundle.parameters.threshold_value }}
+  - kubernetes:
+      description: "Uninstall Virtual Server"
+      manifests:
+        - /cnab/app/manifests/rendered
+      namespace: "{{ bundle.parameters.namespace }}"
+      wait: true
