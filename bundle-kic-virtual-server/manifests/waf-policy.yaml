@@ -33,15 +33,6 @@ metadata:
   name: "$VIRTUAL_SERVER_NAME-dataguard-alarm"
 spec:
   policy:
-    signature-requirements:
-    - tag: Fruits
-    signature-sets:
-    - name: apple_sigs
-      block: true
-      signatureSet:
-        filter:
-          tagValue: Fruits
-          tagFilter: eq
     applicationLanguage: utf-8
     blocking-settings:
       violations:
@@ -61,23 +52,3 @@ spec:
     name: "$VIRTUAL_SERVER_NAME-dataguard-alarm"
     template:
       name: POLICY_TEMPLATE_NGINX_BASE
-
----
-apiVersion: appprotect.f5.com/v1beta1
-kind: APUserSig
-metadata:
-  name: "$VIRTUAL_SERVER_NAME-apple"
-spec:
-  signatures:
-  - accuracy: medium
-    attackType:
-      name: Brute Force Attack
-    description: Medium accuracy user defined signature with tag (Fruits)
-    name: Apple_medium_acc
-    risk: medium
-    rule: content:"apple"; nocase;
-    signatureType: request
-    systems:
-    - name: Microsoft Windows
-    - name: Unix/Linux
-  tag: Fruits
