@@ -1,5 +1,5 @@
 name: secure-global-ingress
-version: 0.0.3
+version: 0.0.4
 description: "A Secure Global Ingress Porter Bundle"
 registry: ghcr.io/clhain
 
