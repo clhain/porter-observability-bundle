@@ -7,8 +7,6 @@ mixins:
   - exec:
 
 credentials:
-  - name: kubeconfig
-    path: /root/.kube/config
   - name: observe-customer
     env: OBSERVE_CUSTOMER
   - name: observe-token
@@ -33,6 +31,10 @@ dependencies:
       nginxplus: true
   - name: observe-k8s
     reference: ghcr.io/clhain/observe-k8s:v0.0.1
+
+parameters:
+  - name: kubeconfig
+    path: /root/.kube/config
 
 install:
   - exec:

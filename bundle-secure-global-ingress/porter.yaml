@@ -7,8 +7,6 @@ mixins:
   - exec:
 
 credentials:
-  - name: kubeconfig
-    path: /root/.kube/config
   - name: volterra_api_creds
     path: /root/.volterra/creds.p12
     description: The volterra API credential p12 file to use to authenticate to Volterra.
@@ -17,6 +15,8 @@ credentials:
     description: The password for the volterra API credential p12 file.
 
 parameters:
+  - name: kubeconfig
+    path: /root/.kube/config
 ### DEPENDENCY PARAMETERS:
 # virtual-server#namespace: "default"
 # virtual-server#virtual_server_name: "online-boutique"
