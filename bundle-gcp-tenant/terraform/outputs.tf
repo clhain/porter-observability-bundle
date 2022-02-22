@@ -1,5 +1,5 @@
-output "username" {
-  value = var.username
+output "tenant_name" {
+  value = var.tenant_name
 }
 output "kubeconfig" {
   description = "kubeconfig"

@@ -1,4 +1,4 @@
-variable "username" {
+variable "tenant_name" {
   default = "porter-default"
 }
 

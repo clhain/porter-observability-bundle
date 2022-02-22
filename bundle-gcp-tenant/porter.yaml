@@ -5,7 +5,7 @@ mixins:
   - exec
 
 name: gcp-tenant
-version: 0.0.1
+version: 0.0.2
 description: "An example applab GCP based tenant"
 registry: ghcr.io/clhain
 dockerfile: Dockerfile.tmpl
@@ -134,7 +134,7 @@ install:
       description: "Install Terraform assets"
       vars:
         vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
-        username: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
+        tenant_name: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
       outputs:
         - name: cluster_name
         - name: region

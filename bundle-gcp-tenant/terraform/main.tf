@@ -22,13 +22,9 @@ resource "random_string" "r_string" {
   special = false
 }
 
-locals {
-  name = lower(replace("${var.username}-${random_string.r_string.id}", "/[_.@]+/", "-"))
-}
-
 module "k8s_cluster" {
   source              = "./modules/gcloud-k8s"
-  name                = local.name
+  name                = var.tenant_name
   project             = var.gcp_project_id
   region              = var.gcp_region
   machine_type        = var.machine_type

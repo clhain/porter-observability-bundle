@@ -33,20 +33,20 @@ module "gcp_network" {
   network_name = local.network_name
   subnets = [
     {
-      subnet_name   = "applab-tenant-primary-subnet"
+      subnet_name   = "${var.name}-primary-subnet"
       subnet_ip     = var.vpc_subnet
       subnet_region = var.region
     },
   ]
   secondary_ranges = {
-    applab-tenant-primary-subnet = [
+    "${var.name}-primary-subnet" = [
       {
-        range_name    = "applab-tenant-pod-subnet"
-        ip_cidr_range = "10.20.0.0/16"
+        range_name    = "${var.name}-pod-subnet"
+        ip_cidr_range = replace(replace(var.vpc_subnet, "/^100/", "10"), "/24", "/25")
       },
       {
-        range_name    = "applab-tenant-service-subnet"
-        ip_cidr_range = "10.30.0.0/16"
+        range_name    = "${var.name}-service-subnet"
+        ip_cidr_range = replace(replace(var.vpc_subnet, "/^100/", "10"), "0/24", "128/25")
       },
     ]
   }
@@ -86,7 +86,7 @@ resource "google_compute_firewall" "default" {
 # Static IP For Cluster Ingress Service
 ###################################################
 resource "google_compute_address" "cluster_ingress" {
-  name         = "applab-tenant-cluster-ingress"
+  name         = "${var.name}-cluster-ingress"
   subnetwork   = module.gcp_network.subnets_names[0]
   address_type = "INTERNAL"
   address      = replace(var.vpc_subnet, "0/24", "2")
