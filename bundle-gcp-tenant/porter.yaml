@@ -5,7 +5,7 @@ mixins:
   - exec
 
 name: gcp-tenant
-version: 0.0.3
+version: 0.0.4
 description: "An example applab GCP based tenant"
 registry: ghcr.io/clhain
 dockerfile: Dockerfile.tmpl
@@ -72,6 +72,11 @@ outputs:
       # after install, re-injecting it back into the bundle
       - install
 
+  - name: tenant_name
+    type: string
+    applyTo:
+      - install
+
   - name: cluster_name
     type: string
     applyTo:
@@ -136,6 +141,7 @@ install:
         vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
         tenant_name: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
       outputs:
+        - name: tenant_name
         - name: cluster_name
         - name: region
         - name: kubeconfig_content
