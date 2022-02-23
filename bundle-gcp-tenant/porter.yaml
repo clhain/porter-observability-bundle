@@ -5,7 +5,7 @@ mixins:
   - exec
 
 name: gcp-tenant
-version: 0.0.2
+version: 0.0.3
 description: "An example applab GCP based tenant"
 registry: ghcr.io/clhain
 dockerfile: Dockerfile.tmpl
