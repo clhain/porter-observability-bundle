@@ -153,7 +153,7 @@ upgrade:
       description: "Upgrade Terraform assets"
       vars:
         vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
-        username: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
+        tenant_name: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
       outputs:
         - name: cluster_name
         - name: region
@@ -177,7 +177,7 @@ plan:
       description: "Invoke 'terraform plan'"
       vars:
         vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
-        username: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
+        tenant_name: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
       flags:
         no-color:
         out: "/dev/null"
@@ -195,7 +195,7 @@ reAuth:
       description: "Refresh Terraform assets including auth key"
       vars:
         vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
-        username: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
+        tenant_name: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
       arguments:
         - "apply"
         - "-auto-approve"
@@ -227,4 +227,4 @@ uninstall:
       description: "Uninstall Terraform assets"
       vars:
         vpc_subnet: "{{ bundle.outputs.vpc_subnet }}"
-        username: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
+        tenant_name: "{{ bundle.dependencies.volterra-namespace.outputs.namespace_name }}"
