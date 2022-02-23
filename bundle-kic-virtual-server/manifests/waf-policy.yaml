@@ -48,7 +48,7 @@ spec:
       lastSsnDigitsToExpose: 4
       maskData: true
       usSocialSecurityNumbers: true
-    enforcementMode: blocking
+    enforcementMode: transparent
     name: "$VIRTUAL_SERVER_NAME-dataguard-alarm"
     template:
       name: POLICY_TEMPLATE_NGINX_BASE

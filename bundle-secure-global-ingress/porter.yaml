@@ -35,7 +35,7 @@ parameters:
 
 dependencies:
   - name: virtual-server
-    reference: ghcr.io/clhain/kic-virtual-server:v0.0.2
+    reference: ghcr.io/clhain/kic-virtual-server:v0.0.3
     # parameters:
     #   namespace: "default"
     #   virtual_server_name: "online-boutique"
