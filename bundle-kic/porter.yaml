@@ -1,5 +1,5 @@
 name: nginx-ingress-controller
-version: 0.0.2
+version: 0.0.3
 description: "An NGINX Ingress Controller Porter Bundle"
 registry: ghcr.io/clhain
 
@@ -43,6 +43,9 @@ parameters:
   - name: nginxplus
     type: boolean
     default: false
+  - name: preview-policies
+    type: boolean
+    default: false
   - name: loadbalancer_type
     type: string
     default: "External"
@@ -82,6 +85,7 @@ install:
       set:
         controller.image.repository: "{{ bundle.parameters.repository }}"
         controller.image.tag: "{{ bundle.parameters.app-version }}"
+        controller.enablePreviewPolicies: "{{ bundle.parameters.preview-policies }}"
 
 upgrade:
   - exec:
@@ -111,6 +115,7 @@ upgrade:
       set:
         controller.image.repository: "{{ bundle.parameters.repository }}"
         controller.image.tag: "{{ bundle.parameters.app-version }}"
+        controller.enablePreviewPolicies: "{{ bundle.parameters.preview-policies }}"
 
 uninstall:
   - exec:
