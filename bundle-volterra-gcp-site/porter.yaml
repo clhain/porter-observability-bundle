@@ -1,0 +1,152 @@
+mixins:
+  - gcloud
+  - terraform:
+      clientVersion: 1.1.5
+  - exec
+
+name: volterra-gcp-site
+version: 0.0.1
+description: "An example Porter Volterra GCP VPC site"
+registry: ghcr.io/clhain
+
+parameters:
+  - name: tfstate
+    type: file
+    path: /cnab/app/terraform/terraform.tfstate
+    source:
+      output: tfstate
+
+  - name: username
+    type: string
+    default: porter-default
+    env: TF_VAR_username
+  - name: site_name
+    type: string
+    default: default_site
+    env: TF_VAR_site_name
+  - name: gcp_project_id
+    type: string
+    env: TF_VAR_gcp_project_id
+  - name: gcp_zone
+    type: string
+    default: us-central1-a
+    env: TF_VAR_gcp_zone
+  - name: gcp_region
+    type: string
+    default: us-central1
+    env: TF_VAR_gcp_region
+  - name: inside_subnet
+    type: string
+    default: 100.64.0.0/24
+    env: TF_VAR_inside_subnet
+  - name: outside_subnet
+    type: string
+    default: 100.64.1.0/24
+    env: TF_VAR_outside_subnet
+  - name: node_number
+    type: string
+    default: "1"
+    env: TF_VAR_node_number
+  - name: machine_type
+    type: string
+    default: e2-standard-2
+    env: TF_VAR_machine_type
+  - name: gcp_cred_file_path
+    type: string
+    default: "/cnab/app/gcloud.json"
+    env: TF_VAR_gcp_cred_file_path
+  - name: gcp_lat
+    type: string
+    default: "0.0"
+    env: TF_VAR_gcp_lat
+  - name: gcp_lng
+    type: string
+    default: "0.0"
+    env: TF_VAR_gcp_lng
+  - name: volt_api_url
+    type: string
+    env: VOLT_API_URL
+    description: The hostname of the volterra tenant to deploy to (https://<tenant>.console.ves.volterra.io/api).
+  - name: api_p12_file
+    type: string
+    default: /root/.volterra/creds.p12
+    env: VOLT_API_P12_FILE
+    description: The path to the Volterra API P12 File.
+outputs:
+  - name: tfstate
+    type: file
+    path: /cnab/app/terraform/terraform.tfstate
+
+credentials:
+  - name: gcloud-key-file
+    path: /cnab/app/gcloud.json
+  - name: volterra_api_creds
+    path: /root/.volterra/creds.p12
+    description: The volterra API credential p12 file to use to authenticate to Volterra.
+  - name: volterra_api_cred_password
+    env: VES_P12_PASSWORD
+    description: The password for the volterra API credential p12 file.
+
+install:
+  - gcloud:
+      description: "Authenticate"
+      groups:
+        - auth
+      command: activate-service-account
+      flags:
+        key-file: gcloud.json
+  - terraform:
+      description: "Install Terraform assets"
+      outputs:
+        - name: cluster_name
+        - name: region
+        - name: kubeconfig_content
+
+upgrade:
+  - gcloud:
+      description: "Authenticate"
+      groups:
+        - auth
+      command: activate-service-account
+      flags:
+        key-file: gcloud.json
+  - terraform:
+      description: "Upgrade Terraform assets"
+
+show:
+  - terraform:
+      description: "Invoke 'terraform show'"
+
+plan:
+  - gcloud:
+      description: "Authenticate"
+      groups:
+        - auth
+      command: activate-service-account
+      flags:
+        key-file: gcloud.json
+  - terraform:
+      description: "Invoke 'terraform plan'"
+      flags:
+        no-color:
+        out: "/dev/null"
+        var: []
+
+# Note: this can't be 'version:' as this would conflict with top-level field
+# Hence the need for the 'arguments:' override
+printVersion:
+  - terraform:
+      description: "Invoke 'terraform version'"
+      arguments:
+        - "version"
+
+uninstall:
+  - gcloud:
+      description: "Authenticate"
+      groups:
+        - auth
+      command: activate-service-account
+      flags:
+        key-file: gcloud.json
+  - terraform:
+      description: "Uninstall Terraform assets"

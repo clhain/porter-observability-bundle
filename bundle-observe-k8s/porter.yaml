@@ -48,6 +48,7 @@ install:
         - namespace
         - observe
         - "observeinc.com/cluster-name={{ bundle.parameters.cluster-name }}"
+        - --overwrite=true
 upgrade:
   - exec:
       description: "Re-apply observe components to the cluster"
@@ -64,6 +65,7 @@ upgrade:
         - namespace
         - observe
         - "observeinc.com/cluster-name={{ bundle.parameters.cluster-name }}"
+        - --overwrite=true
 uninstall:
   - exec:
       description: "Re-apply observe components to the cluster"
