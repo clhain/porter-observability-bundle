@@ -1,0 +1,31 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: otc
+spec:
+  mode: deployment
+  config: |
+    receivers:
+      zipkin:
+        endpoint: 0.0.0.0:9411
+      jaeger:
+        protocols:
+          thrift_http:
+    processors:
+
+    exporters:
+      logging:
+      otlp/observe:
+        endpoint: "otel-agent.observe.svc.cluster.local:4317"
+        tls:
+          insecure: true
+
+    service:
+      telemetry:
+        metrics:
+          address: 127.0.0.1:8000
+      pipelines:
+        traces:
+          receivers: [jaeger, zipkin]
+          processors: []
+          exporters: [logging, otlp/observe]

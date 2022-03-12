@@ -7,6 +7,9 @@ controller:
   config:
     name: nginx-config
     entries:
+      opentracing: "true"
+      opentracing-tracer: /usr/local/lib/libjaegertracing_plugin.so
+      opentracing-tracer-config: '{"service_name": "nginx-ingress","diabled": false,"propagation_format": "w3c","reporter": {"logSpans": true,"endpoint": "http://otc-collector.opentelemetry-operator.svc.cluster.local:14268/api/traces"},"sampler": {"type": "const","param": "1"}}'
       log-format: |
         $remote_addr - $host $remote_user [$time_local] "$request" $status $body_bytes_sent
         "$http_referer" "$http_user_agent" $upstream_response_time $upstream_status
@@ -34,10 +37,3 @@ controller:
 prometheus:
   create: true
   port: 9113
-opentracing-tracer: "/usr/local/lib/libjaegertracing_plugin.so"
-opentracing-tracer-config: |
-    "{\n    \"service_name\": \"nginx-ingress\",\n    \"propagation_format\":
-    \"w3c\",\n    \"sampler\": {\n        \"type\": \"const\",\n        \"param\": 1\n
-    \   },\n    \"reporter\": {\n        \"localAgentHostPort\": \"simplest-collector.observability.svc.cluster.local:9978\"\n
-    \   }\n}  \n"
-opentracing: true

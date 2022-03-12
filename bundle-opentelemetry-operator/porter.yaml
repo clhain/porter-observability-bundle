@@ -1,0 +1,87 @@
+name: opentelemetry-operator
+version: 0.0.1
+description: "An Open Telemetry Operator Bundle"
+registry: ghcr.io/clhain
+
+dockerfile: Dockerfile.tmpl
+
+mixins:
+  - exec:
+  - kubernetes:
+      clientVersion: v1.20.13
+  - helm3:
+      clientVersion: v3.7.2
+      repositories:
+        open-telemetry:
+          url: "https://open-telemetry.github.io/opentelemetry-helm-charts"
+
+credentials:
+  - name: kubeconfig
+    path: /root/.kube/config
+
+customActions:
+  status:
+    description: "Get the status of a helm3 release"
+    modifies: false
+    stateless: true
+
+parameters:
+  - name: namespace
+    type: string
+    default: 'opentelemetry-operator'
+
+install:
+  - helm3:
+      description: "Install Opentelemetry Operator to the cluster"
+      name: opentelemetry-operator
+      namespace: "{{ bundle.parameters.namespace }}"
+      chart: open-telemetry/opentelemetry-operator
+      version: "0.6.3"
+      upsert: true
+      wait: true
+  - kubernetes:
+      description: "Create deployment Resource"
+      wait: true
+      namespace: "{{ bundle.parameters.namespace }}"
+      manifests:
+        - /cnab/app/manifests/deployment.yaml
+
+upgrade:
+  - helm3:
+      description: "Install Opentelemetry Operator to the cluster"
+      name: opentelemetry-operator
+      namespace: "{{ bundle.parameters.namespace }}"
+      chart: open-telemetry/opentelemetry-operator
+      upsert: true
+      wait: true
+  - kubernetes:
+      description: "Upgrade deployment Resource"
+      wait: true
+      namespace: "{{ bundle.parameters.namespace }}"
+      manifests:
+        - /cnab/app/manifests/deployment.yaml
+
+uninstall:
+  - kubernetes:
+      description: "Uninstall Opentelemetry Operator"
+      manifests:
+        - /cnab/app/manifests/
+      namespace: "{{ bundle.parameters.namespace }}"
+      wait: true
+  - helm3:
+      description: "Uninstall Opentelemetry Operator from the cluster"
+      name: opentelemetry-operator
+      namespace: "{{ bundle.parameters.namespace }}"
+      chart: open-telemetry/opentelemetry-operator
+      upsert: true
+      wait: true
+
+status:
+  - helm3:
+      description: "NGINX Ingress Controller Helm Status"
+      arguments:
+        - status
+        - nginx-ingress
+      flags:
+        o: yaml
+        n: "{{ bundle.parameters.namespace }}"

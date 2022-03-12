@@ -1,5 +1,5 @@
 name: opinionated-cluster
-version: 0.0.5
+version: 0.0.6
 description: "An F5 Opinionated K8S Cluster Porter Bundle"
 registry: ghcr.io/clhain
 
@@ -23,14 +23,16 @@ dependencies:
   - name: cert-manager
     reference: ghcr.io/clhain/cert-manager:v0.0.1
   - name: nginx-service-mesh
-    reference: ghcr.io/clhain/nginx-service-mesh:v0.0.2
+    reference: ghcr.io/clhain/nginx-service-mesh:v0.0.3
   - name: nginx-kic
     reference: ghcr.io/clhain/nginx-ingress-controller:v0.0.2
     parameters:
       loadbalancer_type: "Internal"
-      app-version: "2.1.0-ot-nap-dos"
+      app-version: "2.1.1-libjaeger-nap-dos"
       repository: "us.gcr.io/f5-gcs-7506-ptg-deos-octo-dev/nginx-plus-ingress"
       nginxplus: true
+  - name: opentelemetry-operator
+    reference: ghcr.io/clhain/opentelemetry-operator:v0.0.1
   - name: observe-k8s
     reference: ghcr.io/clhain/observe-k8s:v0.0.1
 
