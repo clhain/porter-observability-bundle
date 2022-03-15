@@ -1,5 +1,5 @@
 name: nginx-service-mesh
-version: 0.0.3
+version: 0.0.4
 description: "An NGINX Service Mesh Porter Bundle"
 registry: ghcr.io/clhain
 dockerfile: Dockerfile.tmpl
@@ -9,7 +9,7 @@ mixins:
   - helm3:
       clientVersion: v3.7.2
       repositories:
-        nginx-stable:
+        nsm-stable:
           url: "https://helm.nginx.com/stable"
         prometheus-community:
           url: "https://prometheus-community.github.io/helm-charts"
@@ -30,19 +30,16 @@ parameters:
     default: docker-registry.nginx.com/nsm
   - name: chart-version
     type: string
-    default: "0.3.1"
+    default: "0.4.0"
   - name: prom-adapter-chart-version
     type: string
     default: "3.0.1"
   - name: app-version
     type: string
-    default: "1.3.1"
-  - name: tracing-backend
+    default: "1.4.0"
+  - name: otlp-colletor
     type: string
-    default: zipkin
-  - name: tracing-address
-    type: string
-    default: "otc-collector.opentelemetry-operator.svc.cluster.local:9411"
+    default: "otc-collector-headless.opentelemetry-operator.svc.cluster.local"
   - name: enabled-namespaces
     type: string
     default: "default"
@@ -62,20 +59,19 @@ install:
       description: "Install NGINX Service Mesh to the cluster"
       name: nginx-service-mesh
       namespace: "{{ bundle.parameters.mesh-namespace }}"
-      chart: nginx-stable/nginx-service-mesh
+      chart: nsm-stable/nginx-service-mesh
       upsert: true
       version: "{{ bundle.parameters.chart-version }}"
       wait: true
       values:
-        - /cnab/app/chart-values.yaml
+        - /cnab/app/nsm-chart-values.yaml
       set:
         deployGrafana: "{{ bundle.parameters.deploy-grafana }}"
         autoInjection.disable: true
         autoInjection.enabledNamespaces: "{default}"
         registry.server: "{{ bundle.parameters.registry }}"
         registry.imageTag: "{{ bundle.parameters.app-version }}"
-        tracing.backend: "{{ bundle.parameters.tracing-backend }}"
-        tracing.address: "{{ bundle.parameters.tracing-address }}"
+        telemetry.exporters.otlp.host: "{{ bundle.parameters.otlp-colletor }}"
         mtls.persistentStorage: "off"
         nginxErrorLogLevel: warn
   - exec:
@@ -139,7 +135,7 @@ upgrade:
       description: "Upgrade NGINX Service Mesh to the latest version"
       name: nginx-service-mesh
       namespace: "{{ bundle.parameters.mesh-namespace }}"
-      chart: nginx-stable/nginx-service-mesh
+      chart: nsm-stable/nginx-service-mesh
       upsert: true
       version: "{{ bundle.parameters.chart-version }}"
       wait: true
@@ -151,8 +147,7 @@ upgrade:
         autoInjection.enabledNamespaces: "{ {{ bundle.parameters.enabled-namespaces }} }"
         registry.server: "{{ bundle.parameters.registry }}"
         registry.imageTag: "{{ bundle.parameters.app-version }}"
-        tracing.backend: "{{ bundle.parameters.tracing-backend }}"
-        tracing.address: "{{ bundle.parameters.tracing-address }}"
+        telemetry.exporters.otlp.host: "{{ bundle.parameters.otlp-colletor }}"
         mtls.persistentStorage: "off"
         nginxErrorLogLevel: warn
   - exec:

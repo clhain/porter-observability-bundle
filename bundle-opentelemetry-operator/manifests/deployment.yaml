@@ -6,6 +6,10 @@ spec:
   mode: deployment
   config: |
     receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
       zipkin:
         endpoint: 0.0.0.0:9411
       jaeger:
@@ -26,6 +30,6 @@ spec:
           address: 127.0.0.1:8000
       pipelines:
         traces:
-          receivers: [jaeger, zipkin]
+          receivers: [jaeger, zipkin, otlp]
           processors: []
           exporters: [logging, otlp/observe]

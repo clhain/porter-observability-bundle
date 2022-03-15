@@ -1,5 +1,5 @@
 name: opentelemetry-operator
-version: 0.0.1
+version: 0.0.2
 description: "An Open Telemetry Operator Bundle"
 registry: ghcr.io/clhain
 
