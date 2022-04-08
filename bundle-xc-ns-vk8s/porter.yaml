@@ -3,7 +3,7 @@ mixins:
       clientVersion: 1.0.4
 
 name: xc-ns-vk8s
-version: 0.0.1
+version: 0.0.2
 description: "A porter bundle which deploys a volterra namespace and virtual k8s cluster."
 registry: clhainf5
 
@@ -55,6 +55,11 @@ parameters:
     default: /root/.volterra/creds.p12
     env: VOLT_API_P12_FILE
     description: The path to the Volterra API P12 File.
+  - name: vsite
+    type: string
+    default: ves-io-all-res
+    env: TF_VAR_vsite
+    description: The vsite to deploy the vk8s cluster at.
   - name: tfstate
     type: file
     path: /cnab/app/terraform/terraform.tfstate

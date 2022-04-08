@@ -17,7 +17,7 @@ resource "volterra_virtual_k8s" "this" {
   description = "Virtual Kubernetes Cluster For ${volterra_namespace.this.name}"
 
   vsite_refs {
-    name      = "ves-io-all-res"
+    name      = var.vsite
     tenant    = "ves-io"
     namespace = "shared"
   }
