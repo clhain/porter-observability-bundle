@@ -1,0 +1,91 @@
+mixins:
+  - terraform:
+      clientVersion: 1.0.4
+
+name: xc-ns-vk8s
+version: 0.0.1
+description: "A porter bundle which deploys a volterra namespace and virtual k8s cluster."
+registry: clhainf5
+
+install:
+  - terraform:
+      description: "Install Volterra namespace and vk8s cluster"
+      input: false
+      disableVarFile: true
+      outputs:
+      - name: namespace_name
+      - name: cluster_name
+
+upgrade:
+  - terraform:
+      description: "Upgrade volterra components"
+      input: false
+      disableVarFile: true
+      outputs:
+      - name: namespace_name
+      - name: cluster_name
+
+uninstall:
+  - terraform:
+      description: "Uninstall volterra namespace and vk8s cluster"
+      input: false
+      disableVarFile: true
+
+show:
+  - terraform:
+      description: "Invoke 'terraform show'"
+
+parameters:
+  - name: name
+    type: string
+    default: ""
+    env: TF_VAR_name
+    description: The name of the volterra namespace to create.
+  - name: name_prefix
+    type: string
+    default: ""
+    env: TF_VAR_name_prefix
+    description: The prefix of the volterra namespace to create, which will be prepended to a random ID.
+  - name: volt_api_url
+    type: string
+    env: VOLT_API_URL
+    description: The hostname of the volterra tenant to deploy to (https://<tenant>.console.ves.volterra.io/api).
+  - name: api_p12_file
+    type: string
+    default: /root/.volterra/creds.p12
+    env: VOLT_API_P12_FILE
+    description: The path to the Volterra API P12 File.
+  - name: tfstate
+    type: file
+    path: /cnab/app/terraform/terraform.tfstate
+    source:
+      output: tfstate
+    description: The tfstate file containing the current terraform state.
+
+
+outputs:
+  - name: namespace_name
+    description: "The default namespace_name"
+    type: string
+    default: "default-ns"
+    applyTo:
+      - install
+      - upgrade
+  - name: cluster_name
+    description: "The default cluster_name"
+    type: string
+    default: "default-cluster"
+    applyTo:
+      - install
+      - upgrade
+  - name: tfstate
+    type: file
+    path: /cnab/app/terraform/terraform.tfstate
+
+credentials:
+  - name: volterra_api_creds
+    path: /root/.volterra/creds.p12
+    description: The volterra API credential p12 file to use to authenticate to Volterra.
+  - name: volterra_api_cred_password
+    env: VES_P12_PASSWORD
+    description: The password for the volterra API credential p12 file.
