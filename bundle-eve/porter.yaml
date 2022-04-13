@@ -1,5 +1,5 @@
 name: project-eve-f5xc
-version: 0.0.1
+version: 0.0.2
 description: "Project Eve On F5XC Porter Bundle"
 registry: ghcr.io/clhain
 
@@ -41,7 +41,7 @@ parameters:
     type: string
     env: EVE_IMAGE
     description: The eve docker image to deploy.
-    default: us.gcr.io/f5-gcs-7506-ptg-deos-octo-dev/project-eve:v0.0.5
+    default: us.gcr.io/f5-gcs-7506-ptg-deos-octo-dev/project-eve:v0.0.6
   - name: api_p12_file
     type: string
     default: /root/.volterra/creds.p12
