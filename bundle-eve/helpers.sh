@@ -23,7 +23,7 @@ render() {
   done
 }
 configure() {
-  curl -X POST ${1} -d '{"branch":"master", "dest":"/unitapps/app", "repo":"'${GITHUB_REPO}'"}' -H 'content-type: application/json' --connect-timeout 2 -s -D - -o /dev/null 2>/dev/null | head -n1 | grep 200
+  curl -X POST ${1} -d '{"branch":"'${GITHUB_BRANCH}'", "dest":"/unitapps/app", "repo":"'${GITHUB_REPO}'"}' -H 'content-type: application/json' --connect-timeout 2 -s -D - -o /dev/null 2>/dev/null | head -n1 | grep 200
 }
 activate() {
   while ! configure "$1"; do

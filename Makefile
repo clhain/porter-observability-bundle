@@ -8,10 +8,18 @@ REGISTRY ?= ghcr.io/clhain
 define all-bundles
 	@for dir in $$(ls -1 .); do \
 		if [[ -e "./$$dir/porter.yaml" ]]; then \
-			BUNDLE=$$dir $(MAKE) $(MAKE_OPTS) $(1) || exit $$? ; \
+			if grep -q $$dir "./build"; then \
+				BUNDLE=$$dir $(MAKE) $(MAKE_OPTS) $(1) || exit $$? ; \
+			fi ; \
 		fi ; \
 	done
 endef
+
+
+.PHONY: reauth
+reauth:
+	@porter invoke ${GKE_PORTER_INSTALLATION} --reference ghcr.io/bdegeeter/gcp-gke:v0.2.2-add-cred-refresh --action reAuth --cred ${GKE_PORTER_CREDS}  && \
+		porter installations output show kubeconfig_content -i ${GKE_PORTER_INSTALLATION}  > kubeconfig
 
 .PHONY: build-bundle
 build-bundle:

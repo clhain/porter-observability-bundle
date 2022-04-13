@@ -36,6 +36,7 @@ parameters:
     type: string
     env: GITHUB_BRANCH
     description: The Github Repo to serve.
+    default: master
   - name: eve_image
     type: string
     env: EVE_IMAGE
