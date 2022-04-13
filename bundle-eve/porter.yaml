@@ -1,0 +1,152 @@
+name: project-eve-f5xc
+version: 0.0.1
+description: "Project Eve On F5XC Porter Bundle"
+registry: ghcr.io/clhain
+
+mixins:
+- exec:
+- terraform:
+    clientVersion: 1.0.4
+- kubernetes:
+    clientVersion: v1.20.13
+
+dockerfile: Dockerfile.tmpl
+
+credentials:
+  - name: volterra_api_creds
+    path: /root/.volterra/creds.p12
+    description: The volterra API credential p12 file to use to authenticate to Volterra.
+  - name: volterra_api_cred_password
+    env: VES_P12_PASSWORD
+    description: The password for the volterra API credential p12 file.
+  - name: docker_config_b64
+    description: Base64 encoded docker config to use when pulling eve image.
+    env: DOCKERCONFIG_BASE64
+
+parameters:
+  - name: app_fqdn
+    type: string
+    env: TF_VAR_app_fqdn
+    description: The HTTPS auto-cert hostname to setup for GSLB.
+  - name: github_repo
+    type: string
+    env: GITHUB_REPO
+    description: The Github Repo to serve.
+  - name: github_branch
+    type: string
+    env: GITHUB_BRANCH
+    description: The Github Repo to serve.
+  - name: eve_image
+    type: string
+    env: EVE_IMAGE
+    description: The eve docker image to deploy.
+    default: us.gcr.io/f5-gcs-7506-ptg-deos-octo-dev/project-eve:v0.0.5
+  - name: api_p12_file
+    type: string
+    default: /root/.volterra/creds.p12
+    env: VOLT_API_P12_FILE
+    description: The path to the Volterra API P12 File.
+  - name: volt_api_url
+    type: string
+    env: VOLT_API_URL
+    default: https://f5-octo.console.ves.volterra.io/api
+    description: The hostname of the volterra tenant to deploy to (https://<tenant>.console.ves.volterra.io/api).
+  - name: tfstate
+    type: file
+    path: /cnab/app/terraform/terraform.tfstate
+    source:
+      output: tfstate
+    description: The tfstate file containing the current terraform state.
+
+dependencies:
+  - name: xc-ns-vk8s
+    reference: ghcr.io/clhain/xc-ns-vk8s:v0.0.2
+    parameters:
+      volt_api_url: https://f5-octo.console.ves.volterra.io/api
+      name_prefix: applab-eve-tenant
+
+install:
+  - exec:
+      description: "Render the manifests with parameters from env"
+      command: ./helpers.sh
+      arguments:
+        - render
+      suffix-arguments:
+        - EVE_IMAGE={{ bundle.parameters.eve_image }}
+        - DOCKERCONFIG_BASE64={{ bundle.credentials.docker_config_b64 }}
+
+  - terraform:
+      description: "Fetch kubeconfig for cluster and install http lb"
+      input: false
+      disableVarFile: true
+      vars:
+        namespace_name: "{{ bundle.dependencies.xc-ns-vk8s.outputs.namespace_name }}"
+        cluster_name: "{{ bundle.dependencies.xc-ns-vk8s.outputs.cluster_name }}"
+        name_prefix: applab-eve-tenant
+        service_name: "project-eve"
+        app_fqdn: "{{ bundle.parameters.app_fqdn }}"
+
+  - exec:
+      description: "Copy the kubectl for subsequent steps"
+      command: mkdir
+      arguments:
+        - "/root/.kube"
+
+  - exec:
+      description: "Copy the kubectl for subsequent steps"
+      command: cp
+      arguments:
+        - "/cnab/app/terraform/_output/vk8s_kubeconfig"
+        - "/root/.kube/config"
+
+  - kubernetes:
+      description: "Install Project Eve"
+      manifests:
+        - /cnab/app/manifest/rendered/
+      namespace: "{{ bundle.dependencies.xc-ns-vk8s.outputs.namespace_name }}"
+      wait: true
+
+  - exec:
+      description: "Activate the GitHubRepo"
+      command: ./helpers.sh
+      arguments:
+        - activate
+      suffix-arguments:
+        - https://{{ bundle.parameters.app_fqdn }}/eve/api/v1/pull
+
+upgrade:
+  - terraform:
+      description: "Fetch kubeconfig for cluster and install http lb"
+      input: false
+      disableVarFile: true
+      vars:
+        namespace_name: "{{ bundle.dependencies.xc-ns-vk8s.outputs.namespace_name }}"
+        cluster_name: "{{ bundle.dependencies.xc-ns-vk8s.outputs.cluster_name }}"
+        name_prefix: applab-eve-tenant
+        service_name: "project-eve"
+        service_port: "8080"
+        app_fqdn: "{{ bundle.parameters.app_fqdn }}"
+  - kubernetes:
+      description: "Install Project Eve"
+      manifests:
+        - /cnab/app/manifest/kubernetes-manifests.yaml
+      namespace: "{{ bundle.dependencies.xc-ns-vk8s.outputs.namespace_name }}"
+      wait: true
+
+uninstall:
+  - exec:
+      description: "Echo something... the dependent bundle will destroy everything..."
+      command: echo
+      arguments:
+        - "Goodbye"
+
+outputs:
+  - name: tfstate
+    type: file
+    path: /cnab/app/terraform/terraform.tfstate
+  - name: kubeconfig
+    type: file
+    path: /cnab/app/terraform/_output/vk8s_kubeconfig
+    applyTo:
+      - install
+      - upgrade
