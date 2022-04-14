@@ -1,5 +1,5 @@
 name: project-eve-f5xc
-version: 0.0.2
+version: 0.0.3
 description: "Project Eve On F5XC Porter Bundle"
 registry: ghcr.io/clhain
 
@@ -32,11 +32,12 @@ parameters:
     type: string
     env: GITHUB_REPO
     description: The Github Repo to serve.
+    default: https://github.com/dallasnorton/eve-page.git
   - name: github_branch
     type: string
     env: GITHUB_BRANCH
     description: The Github Repo to serve.
-    default: master
+    default: dev
   - name: eve_image
     type: string
     env: EVE_IMAGE
