@@ -27,7 +27,11 @@ jobs:
         with:
           porter_version: v1.0.0-alpha.20
       - name: Get Mixins
-        run: make get-mixins
+        run: |
+          porter mixins install gcloud
+          porter mixins install terraform
+          porter mixins install kubernetes
+
       - name: Docker Login
         uses: docker/login-action@v1
         with:
