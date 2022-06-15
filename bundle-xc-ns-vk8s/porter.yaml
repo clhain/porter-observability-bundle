@@ -54,7 +54,7 @@ parameters:
     description: The hostname of the volterra tenant to deploy to (https://<tenant>.console.ves.volterra.io/api).
   - name: api_p12_file
     type: string
-    default: /root/.volterra/creds.p12
+    default: /cnab/app/.volterra/creds.p12
     env: VOLT_API_P12_FILE
     description: The path to the Volterra API P12 File.
   - name: vsite
@@ -91,7 +91,7 @@ outputs:
 
 credentials:
   - name: volterra_api_creds
-    path:  /root/.volterra/creds.p12.b64
+    path:  /cnab/app/.volterra/creds.p12.b64
     description: The volterra API credential p12 file to use to authenticate to Volterra.
   - name: volterra_api_cred_password
     env: VES_P12_PASSWORD

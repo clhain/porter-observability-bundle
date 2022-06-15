@@ -15,7 +15,7 @@ dockerfile: Dockerfile.tmpl
 
 credentials:
   - name: volterra_api_creds
-    path: /root/.volterra/creds.p12.b64
+    path: /cnab/app/.volterra/creds.p12.b64
     description: The base64 volterra API credential p12 file to use to authenticate to Volterra.
   - name: volterra_api_cred_password
     env: VES_P12_PASSWORD
@@ -46,7 +46,7 @@ parameters:
     default: us.gcr.io/f5-gcs-7506-ptg-deos-octo-dev/project-eve:v0.0.6
   - name: api_p12_file
     type: string
-    default: /root/.volterra/creds.p12
+    default: /cnab/app/.volterra/creds.p12
     env: VOLT_API_P12_FILE
     description: The path to the Volterra API P12 File.
   - name: volt_api_url
@@ -100,14 +100,14 @@ install:
       description: "Copy the kubectl for subsequent steps"
       command: mkdir
       arguments:
-        - "/root/.kube"
+        - "/$(HOME)/.kube"
 
   - exec:
       description: "Copy the kubectl for subsequent steps"
       command: cp
       arguments:
         - "/cnab/app/terraform/_output/vk8s_kubeconfig"
-        - "/root/.kube/config"
+        - "/$(HOME)/.kube/config"
 
   - kubernetes:
       description: "Install Project Eve"
