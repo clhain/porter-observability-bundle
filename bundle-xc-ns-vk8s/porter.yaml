@@ -43,6 +43,11 @@ uninstall:
       command: ./helpers.sh
       arguments:
         - render_volt_creds
+  - exec:
+      description: "Decode the volterra api creds file"
+      command: ./helpers.sh
+      arguments:
+        - render_volt_creds
   - terraform:
       description: "Uninstall volterra namespace and vk8s cluster"
       input: false

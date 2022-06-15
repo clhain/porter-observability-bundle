@@ -2,6 +2,10 @@ resource "random_id" "this" {
   byte_length = 4
 }
 
+provider "volterra" {
+  api_p12_file     = "/cnab/app/.volterra/creds.p12"
+}
+
 # Create the volterra namespace and sleep 10s to prevent creation failures for child objects. 
 resource "volterra_namespace" "this" {
   name = var.name != "" ?  var.name : "${var.name_prefix}-${random_id.this.hex}"

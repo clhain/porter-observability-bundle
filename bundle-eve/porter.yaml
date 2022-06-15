@@ -125,6 +125,11 @@ install:
         - https://{{ bundle.parameters.app_fqdn }}/eve/api/v1/pull
 
 upgrade:
+  - exec:
+      description: "Decode the volterra api creds file"
+      command: ./helpers.sh
+      arguments:
+        - render_volt_creds
   - terraform:
       description: "Fetch kubeconfig for cluster and install http lb"
       input: false
@@ -144,6 +149,11 @@ upgrade:
       wait: true
 
 uninstall:
+  - exec:
+      description: "Decode the volterra api creds file"
+      command: ./helpers.sh
+      arguments:
+        - render_volt_creds
   - exec:
       description: "Echo something... the dependent bundle will destroy everything..."
       command: echo
