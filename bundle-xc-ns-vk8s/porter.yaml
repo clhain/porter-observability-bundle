@@ -1,11 +1,13 @@
 mixins:
+  - exec:
   - terraform:
       clientVersion: 1.0.4
 
 name: xc-ns-vk8s
-version: 0.0.2
+version: 0.0.3
 description: "A porter bundle which deploys a volterra namespace and virtual k8s cluster."
-registry: clhainf5
+registry:  ghcr.io/clhain
+schemaVersion: 1.0.0-alpha.1
 
 install:
   - terraform:
@@ -89,7 +91,7 @@ outputs:
 
 credentials:
   - name: volterra_api_creds
-    path: /root/.volterra/creds.p12
+    path:  /root/.volterra/creds.p12.b64
     description: The volterra API credential p12 file to use to authenticate to Volterra.
   - name: volterra_api_cred_password
     env: VES_P12_PASSWORD
