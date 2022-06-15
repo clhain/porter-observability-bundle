@@ -111,7 +111,7 @@ outputs:
 
 credentials:
   - name: volterra_api_creds
-    path:  /cnab/app/.volterra/creds.p12.b64
+    path:  /cnab/app/.creds/creds.p12.b64
     description: The volterra API credential p12 file to use to authenticate to Volterra.
   - name: volterra_api_cred_password
     env: VES_P12_PASSWORD
