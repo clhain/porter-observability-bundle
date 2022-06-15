@@ -15,8 +15,8 @@ dockerfile: Dockerfile.tmpl
 
 credentials:
   - name: volterra_api_creds
-    path: /root/.volterra/creds.p12
-    description: The volterra API credential p12 file to use to authenticate to Volterra.
+    path: /root/.volterra/creds.p12.b64
+    description: The base64 volterra API credential p12 file to use to authenticate to Volterra.
   - name: volterra_api_cred_password
     env: VES_P12_PASSWORD
     description: The password for the volterra API credential p12 file.
@@ -64,8 +64,7 @@ parameters:
 dependencies:
   requires:
     - name: xc-ns-vk8s
-      bundle:
-        reference: ghcr.io/clhain/xc-ns-vk8s:v0.0.2
+      reference: ghcr.io/clhain/xc-ns-vk8s:v0.0.2
       parameters:
         volt_api_url: https://f5-octo.console.ves.volterra.io/api
         name_prefix: applab-eve-tenant
@@ -79,6 +78,12 @@ install:
       suffix-arguments:
         - EVE_IMAGE={{ bundle.parameters.eve_image }}
         - DOCKERCONFIG_BASE64={{ bundle.credentials.docker_config_b64 }}
+
+  - exec:
+      description: "Decode the volterra api creds file"
+      command: ./helpers.sh
+      arguments:
+        - render_volt_creds
 
   - terraform:
       description: "Fetch kubeconfig for cluster and install http lb"

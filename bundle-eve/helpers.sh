@@ -22,9 +22,11 @@ render() {
     envsubst < $f > manifest/rendered/$base
   done
 }
+
 configure() {
   curl -X POST ${1} -d '{"branch":"'${GITHUB_BRANCH}'", "dest":"/unitapps/app", "repo":"'${GITHUB_REPO}'"}' -H 'content-type: application/json' --connect-timeout 2 -s -D - -o /dev/null 2>/dev/null | head -n1 | grep 200
 }
+
 activate() {
   while ! configure "$1"; do
     echo wait for app... 
@@ -32,7 +34,9 @@ activate() {
   done
 }
 
-
+render_volt_creds() {
+  cat /root/.volterra/creds.p12.b64 | base64 -d  > ${VOLT_API_P12_FILE}
+}
 
 echo "$@"
 "$@"
