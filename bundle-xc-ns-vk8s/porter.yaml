@@ -10,6 +10,11 @@ registry:  ghcr.io/clhain
 schemaVersion: 1.0.0-alpha.1
 
 install:
+  - exec:
+      description: "Decode the volterra api creds file"
+      command: ./helpers.sh
+      arguments:
+        - render_volt_creds
   - terraform:
       description: "Install Volterra namespace and vk8s cluster"
       input: false
@@ -19,6 +24,11 @@ install:
       - name: cluster_name
 
 upgrade:
+  - exec:
+      description: "Decode the volterra api creds file"
+      command: ./helpers.sh
+      arguments:
+        - render_volt_creds
   - terraform:
       description: "Upgrade volterra components"
       input: false
@@ -28,6 +38,11 @@ upgrade:
       - name: cluster_name
 
 uninstall:
+  - exec:
+      description: "Decode the volterra api creds file"
+      command: ./helpers.sh
+      arguments:
+        - render_volt_creds
   - terraform:
       description: "Uninstall volterra namespace and vk8s cluster"
       input: false
