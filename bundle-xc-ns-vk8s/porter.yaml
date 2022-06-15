@@ -4,7 +4,7 @@ mixins:
       clientVersion: 1.0.4
 
 name: xc-ns-vk8s
-version: 0.0.3
+version: 0.0.4
 description: "A porter bundle which deploys a volterra namespace and virtual k8s cluster."
 registry:  ghcr.io/clhain
 schemaVersion: 1.0.0-alpha.1

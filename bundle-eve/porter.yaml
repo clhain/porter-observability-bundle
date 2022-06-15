@@ -1,5 +1,5 @@
 name: project-eve-f5xc
-version: 0.0.4
+version: 0.0.5
 schemaVersion: 1.0.0-alpha.1
 description: "Project Eve On F5XC Porter Bundle"
 registry: ghcr.io/clhain
