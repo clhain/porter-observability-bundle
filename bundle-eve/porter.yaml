@@ -1,5 +1,6 @@
 name: project-eve-f5xc
-version: 0.0.3
+version: 0.0.4
+schemaVersion: 1.0.0-alpha.1
 description: "Project Eve On F5XC Porter Bundle"
 registry: ghcr.io/clhain
 
@@ -61,11 +62,12 @@ parameters:
     description: The tfstate file containing the current terraform state.
 
 dependencies:
-  - name: xc-ns-vk8s
-    reference: ghcr.io/clhain/xc-ns-vk8s:v0.0.2
-    parameters:
-      volt_api_url: https://f5-octo.console.ves.volterra.io/api
-      name_prefix: applab-eve-tenant
+  requires:
+    - name: xc-ns-vk8s
+      reference: ghcr.io/clhain/xc-ns-vk8s:v0.0.2
+      parameters:
+        volt_api_url: https://f5-octo.console.ves.volterra.io/api
+        name_prefix: applab-eve-tenant
 
 install:
   - exec:
