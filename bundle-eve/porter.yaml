@@ -100,14 +100,14 @@ install:
       description: "Copy the kubectl for subsequent steps"
       command: mkdir
       arguments:
-        - "/$(HOME)/.kube"
+        - "$HOME/.kube"
 
   - exec:
       description: "Copy the kubectl for subsequent steps"
       command: cp
       arguments:
         - "/cnab/app/terraform/_output/vk8s_kubeconfig"
-        - "/$(HOME)/.kube/config"
+        - "$HOME/.kube/config"
 
   - kubernetes:
       description: "Install Project Eve"
