@@ -39,9 +39,6 @@ render_volt_creds() {
   cat /cnab/app/.creds/creds.p12.b64 | base64 -d  > ${VOLT_API_P12_FILE}
 }
 
-export_kubeconfig() {
-  export KUBECONFIG=/cnab/app/terraform/_output/vk8s_kubeconfig
-}
 
 echo "$@"
 "$@"

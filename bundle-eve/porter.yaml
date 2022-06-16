@@ -49,6 +49,11 @@ parameters:
     default: /cnab/app/.volterra/creds.p12
     env: VOLT_API_P12_FILE
     description: The path to the Volterra API P12 File.
+  - name: kubeconfig_path
+    type: string
+    default: /cnab/app/terraform/_output/vk8s_kubeconfig
+    env: KUBECONFIG
+    description: The path to the kubeconfig file.
   - name: volt_api_url
     type: string
     env: VOLT_API_URL
@@ -96,12 +101,6 @@ install:
         service_name: "project-eve"
         app_fqdn: "{{ bundle.parameters.app_fqdn }}"
 
-  - exec:
-      description: "Export Kubeconfig env"
-      command: ./helpers.sh
-      arguments:
-        - export_kubeconfig
-
   - kubernetes:
       description: "Install Project Eve"
       manifests:
@@ -134,11 +133,6 @@ upgrade:
         service_name: "project-eve"
         service_port: "8080"
         app_fqdn: "{{ bundle.parameters.app_fqdn }}"
-  - exec:
-      description: "Export Kubeconfig env"
-      command: ./helpers.sh
-      arguments:
-        - export_kubeconfig
   - kubernetes:
       description: "Install Project Eve"
       manifests:
