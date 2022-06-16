@@ -97,17 +97,10 @@ install:
         app_fqdn: "{{ bundle.parameters.app_fqdn }}"
 
   - exec:
-      description: "Copy the kubectl for subsequent steps"
-      command: mkdir
+      description: "Export Kubeconfig env"
+      command: ./helpers.sh
       arguments:
-        - "$HOME/.kube"
-
-  - exec:
-      description: "Copy the kubectl for subsequent steps"
-      command: cp
-      arguments:
-        - "/cnab/app/terraform/_output/vk8s_kubeconfig"
-        - "$HOME/.kube/config"
+        - export_kubeconfig
 
   - kubernetes:
       description: "Install Project Eve"
@@ -141,6 +134,11 @@ upgrade:
         service_name: "project-eve"
         service_port: "8080"
         app_fqdn: "{{ bundle.parameters.app_fqdn }}"
+  - exec:
+      description: "Export Kubeconfig env"
+      command: ./helpers.sh
+      arguments:
+        - export_kubeconfig
   - kubernetes:
       description: "Install Project Eve"
       manifests:
