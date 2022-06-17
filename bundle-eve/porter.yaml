@@ -69,7 +69,8 @@ parameters:
 dependencies:
   requires:
     - name: xc-ns-vk8s
-      reference: ghcr.io/clhain/xc-ns-vk8s:v0.0.4
+      bundle:
+        reference: ghcr.io/clhain/xc-ns-vk8s:v0.0.4
       parameters:
         volt_api_url: https://f5-octo.console.ves.volterra.io/api
         name_prefix: applab-eve-tenant
