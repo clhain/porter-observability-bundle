@@ -31,32 +31,32 @@ resource "volterra_virtual_k8s" "this" {
   }
 }
 
-# Download the kubernetes kubeconfig for interaction with the vk8s cluster.
-resource "volterra_api_credential" "this" {
-  name                  = "${volterra_namespace.this.name}"
-  api_credential_type   = "KUBE_CONFIG"
-  virtual_k8s_namespace = volterra_namespace.this.name
-  virtual_k8s_name      = volterra_virtual_k8s.this.name
-  lifecycle {
-    ignore_changes = [
-      name
-    ]
-  }
-}
+# # Download the kubernetes kubeconfig for interaction with the vk8s cluster.
+# resource "volterra_api_credential" "this" {
+#   name                  = "${volterra_namespace.this.name}"
+#   api_credential_type   = "KUBE_CONFIG"
+#   virtual_k8s_namespace = volterra_namespace.this.name
+#   virtual_k8s_name      = volterra_virtual_k8s.this.name
+#   lifecycle {
+#     ignore_changes = [
+#       name
+#     ]
+#   }
+# }
 
-# Save the kubeconfig to a local file for interaction with the cluster later on.
-resource "local_file" "this_kubeconfig" {
-  content  = base64decode(volterra_api_credential.this.data)
-  filename = format("%s/_output/vk8s_kubeconfig", path.root)
-}
+# # Save the kubeconfig to a local file for interaction with the cluster later on.
+# resource "local_file" "this_kubeconfig" {
+#   content  = base64decode(volterra_api_credential.this.data)
+#   filename = format("%s/_output/vk8s_kubeconfig", path.root)
+# }
 
-# Wait for the kubernetes cluster to become ready to serve requests.
-resource "null_resource" "wait_for_vk8s" {
-  depends_on = [volterra_virtual_k8s.this, local_file.this_kubeconfig]
-  provisioner "local-exec" {
-    command = "while [ -n $(kubectl get ns) ]; do sleep 1; done"
-    environment = {
-      KUBECONFIG = format("%s/_output/vk8s_kubeconfig", path.root)
-    }
-  }
-}
+# # Wait for the kubernetes cluster to become ready to serve requests.
+# resource "null_resource" "wait_for_vk8s" {
+#   depends_on = [volterra_virtual_k8s.this, local_file.this_kubeconfig]
+#   provisioner "local-exec" {
+#     command = "while [ -n $(kubectl get ns) ]; do sleep 1; done"
+#     environment = {
+#       KUBECONFIG = format("%s/_output/vk8s_kubeconfig", path.root)
+#     }
+#   }
+# }

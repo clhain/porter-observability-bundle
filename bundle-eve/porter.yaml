@@ -101,7 +101,11 @@ install:
         name_prefix: applab-eve-tenant
         service_name: "project-eve"
         app_fqdn: "{{ bundle.parameters.app_fqdn }}"
-
+  - exec:
+      description: "Wait for cluster to be available"
+      command: ./helpers.sh
+      arguments:
+        - wait_for_cluster
   - kubernetes:
       description: "Install Project Eve"
       manifests:

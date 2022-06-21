@@ -39,6 +39,20 @@ render_volt_creds() {
   cat /cnab/app/.creds/creds.p12.b64 | base64 -d  > ${VOLT_API_P12_FILE}
 }
 
+wait_for_cluster() {
+  n=0
+  until [ "$n" -ge 300 ]
+  do 
+    kubectl get nsa && break
+    n=$((n+1))
+    echo "Still waiting for cluster... (Attempt: ${n}/300)"
+    sleep 1;
+  done
+  # kubectl get nsa
+  # while [ $? -ne 0 ]; do
+  #   kubectl get ns
+  # done
+}
 
 echo "$@"
 "$@"
