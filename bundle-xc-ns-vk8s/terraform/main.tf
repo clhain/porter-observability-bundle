@@ -33,7 +33,7 @@ resource "volterra_virtual_k8s" "this" {
 
 # Download the kubernetes kubeconfig for interaction with the vk8s cluster.
 resource "volterra_api_credential" "this" {
-  name                  = "${volterra_namespace.this.name}-vk8s-cred"
+  name                  = "${volterra_namespace.this.name}"
   api_credential_type   = "KUBE_CONFIG"
   virtual_k8s_namespace = volterra_namespace.this.name
   virtual_k8s_name      = volterra_virtual_k8s.this.name
