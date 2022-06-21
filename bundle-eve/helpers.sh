@@ -43,11 +43,12 @@ wait_for_cluster() {
   n=0
   until [ "$n" -ge 300 ]
   do 
-    kubectl get ns && break
+    kubectl get deployments && break
     n=$((n+1))
     echo "Still waiting for cluster... (Attempt: ${n}/300)"
     sleep 1;
   done
+  sleep 30
 }
 
 echo "$@"
